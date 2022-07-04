@@ -5,15 +5,27 @@ import cors from 'cors'
 import {logger} from 'src/logger'
 import http, {Server} from 'http'
 import {config} from 'src/config'
-
+import payment from './payment'
+import bodyParser from 'body-parser'
 const l = logger(module)
 
 export const RESTServer = async () => {
   const api = express()
-  api.use(helmet())
-  api.disable('x-powered-by')
-  api.use(cors)
-  api.use(compression)
+  // todo: figure out how to lockdown; when i enable this everything breaks
+
+  // api.use(helmet())
+  // api.disable('x-powered-by')
+  // api.use(cors)
+  // api.use(compression)
+  api.use((req, res, next) => {
+    if (req.originalUrl === '/v0/payment/hook') {
+      next()
+    } else {
+      express.json()(req, res, next)
+    }
+  })
+
+  api.use(bodyParser.urlencoded({extended: false}))
 
   const minterRouter = Router({mergeParams: true})
   const paymentRouter = Router({mergeParams: true})
@@ -23,6 +35,8 @@ export const RESTServer = async () => {
   let server: Server
 
   const close = () => server.close()
+
+  payment(paymentRouter)
 
   l.info('REST API starting...')
   try {

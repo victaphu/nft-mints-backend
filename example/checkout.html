@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Buy cool new product</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+  <body>
+    <section>
+      <div class="product">
+        <img src="https://i.imgur.com/EHyR2nP.png" alt="The cover of Stubborn Attachments" />
+        <div class="description">
+          <h3>Stubborn Attachments</h3>
+          <h5>$20.00</h5>
+        </div>
+      </div>
+      <form
+        action="http://localhost:3000/v0/payment/checkout"
+        method="POST"
+        enctype="application/x-www-form-urlencoded"
+      >
+        <input
+          type="text"
+          id="success"
+          name="successUrl"
+          value="http://localhost:8000/success.html"
+        />
+        <input type="text" id="cancel" name="cancelUrl" value="http://localhost:8000/cancel.html" />
+        <input type="text" id="tokenid" name="tokenId" value="12345" />
+        <input type="text" id="smsCode" name="smsCode" value="12345" />
+        <input type="text" id="tokenaddress" name="tokenAddress" value="0x12345123145" />
+        <input type="text" id="mobile" name="mobileNumber" value="614953153886" />
+        <button type="submit" id="checkout-button">Checkout</button>
+      </form>
+    </section>
+  </body>
+</html>
