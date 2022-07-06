@@ -11,7 +11,8 @@
     "build:dev": "tsc -w",
     "test": "mocha -w -r ts-node/register src/**/*.test.ts",
     "format": "prettier --write \"**/*.ts\"",
-    "lint": "eslint './src/'"
+    "lint": "eslint './src/'",
+    "example": "python3 -m http.server -d example"
   },
   "author": "",
   "license": "AGPLv3",

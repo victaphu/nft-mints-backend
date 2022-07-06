@@ -19,6 +19,6 @@ export const config = {
     },
   },
   api: {
-    port: +(process.env.API_REST_PORT || 3000),
+    port: +(process.env.PORT || 3000),
   },
 }
