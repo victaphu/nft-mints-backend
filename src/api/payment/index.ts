@@ -24,13 +24,13 @@ const checkout = async (request: Request, response: Response) => {
 
   if (!errors.isEmpty()) {
     l.error(`Failed - error validation unsuccessful`, errors)
-    response.status(400).send(`Parameters Error ${errors}`)
+    response.status(400).send({status: 'failed', message: errors})
     return
   }
 
   if (smsCode !== '12345') {
     l.error('SMS Code failed')
-    response.status(400).send('Invalid SMS Code')
+    response.status(400).send({status: 'failed', message: 'invalid sms code'})
     return
   }
   // lookup token address + token id to find the product id in the database
