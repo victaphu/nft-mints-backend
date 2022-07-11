@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "nodemon --exec npm run start:test",
     "start:test": "ts-node  -r tsconfig-paths/register src/index.ts",
     "start": "node dist/main.js",
     "build": "webpack --config webpack.config.js",

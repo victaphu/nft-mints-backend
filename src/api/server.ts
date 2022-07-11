@@ -6,6 +6,7 @@ import {logger} from 'src/logger'
 import http, {Server} from 'http'
 import {config} from 'src/config'
 import payment from './payment'
+import token from './token'
 import bodyParser from 'body-parser'
 const l = logger(module)
 
@@ -29,14 +30,18 @@ export const RESTServer = async () => {
 
   const minterRouter = Router({mergeParams: true})
   const paymentRouter = Router({mergeParams: true})
+  const tokensRouter = Router({mergeParams: true})
 
   api.use('/v0/payment', paymentRouter)
   api.use('/v0/minter', minterRouter)
+  api.use('/v0/tokens', tokensRouter)
+
   let server: Server
 
   const close = () => server.close()
 
   payment(paymentRouter)
+  token(tokensRouter)
 
   l.info('REST API starting...')
   try {
