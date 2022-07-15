@@ -12,12 +12,16 @@ const l = logger(module)
 
 export const RESTServer = async () => {
   const api = express()
-  // todo: figure out how to lockdown; when i enable this everything breaks
 
-  // api.use(helmet())
+  api.use(helmet())
   api.disable('x-powered-by')
-  api.use(cors)
-  api.use(compression)
+  // todo: fix origin
+  api.use(
+    cors({
+      origin: '*',
+    })
+  )
+  // api.use(compression)
   api.use((req, res, next) => {
     if (req.originalUrl === '/v0/payment/hook') {
       next()

@@ -9,9 +9,14 @@ function App() {
   const [nfts, setNfts] = useState([])
 
   useEffect(() => {
-    const response = axios.get('https://smsnftgateway.herokuapp.com/v0/tokens')
-    console.log(response)
-    setNfts(response.data.nfts)
+    console.log('Fetching data')
+    axios
+      .get('https://smsnftgateway.herokuapp.com/v0/tokens')
+      .then((response) => {
+        console.log(response)
+        setNfts(response.data.nfts)
+      })
+      .catch((e) => console.error(e))
   }, [filters, page])
 
   // get list of nfts
