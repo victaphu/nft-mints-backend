@@ -4,14 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon",
-    "start": "ts-node  -r tsconfig-paths/register src/index.ts",
-    "start:prod": "node dist/main.js",
+    "dev": "nodemon --exec npm run start:test",
+    "start:test": "ts-node  -r tsconfig-paths/register src/index.ts",
+    "start": "node dist/main.js",
     "build": "webpack --config webpack.config.js",
     "build:dev": "tsc -w",
     "test": "mocha -w -r ts-node/register src/**/*.test.ts",
     "format": "prettier --write \"**/*.ts\"",
-    "lint": "eslint './src/'"
+    "lint": "eslint './src/'",
+    "example": "python3 -m http.server -d example"
   },
   "author": "",
   "license": "AGPLv3",
@@ -49,7 +50,7 @@
     "prettier": "^2.1.1",
     "pretty-quick": "^3.0.2",
     "ts-loader": "^9.1.0",
-    "ts-node": "^10.8.1",
+    "ts-node": "^10.8.2",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.7.4",
     "typescript-transform-paths": "^2.2.3",
