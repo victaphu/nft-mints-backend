@@ -22,6 +22,16 @@ export async function checkout({
   // lookup token address + token id to find the product id in the database
   const productId = 'price_1LHqjcKXnj3LtQdKjTlqHBYx'
 
+  console.log(
+    'checkout received',
+    tokenId,
+    tokenAddress,
+    mobileNumber,
+    smsCode,
+    successUrl,
+    cancelUrl
+  )
+
   const session = await stripe.checkout.sessions.create({
     line_items: [
       {
@@ -83,13 +93,20 @@ export async function handleStripeHook(request: Request) {
   const paymentIntent: any = event.data.object
   switch (event.type) {
     case 'payment_intent.succeeded':
-      console.log(paymentIntent, paymentIntent.metadata)
+      console.log('Received payment intent success', paymentIntent, paymentIntent.metadata)
 
       // send SMS!
 
       // Then define and call a function to handle the event payment_intent.succeeded
       break
     // ... handle other event types
+    case 'checkout.session.completed':
+      console.log(
+        'Received session completed, we can mint now',
+        paymentIntent,
+        paymentIntent.metadata
+      )
+      break
     default:
       console.log(`Unhandled event type ${event.type}`)
   }

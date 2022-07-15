@@ -126,6 +126,7 @@ const init = (app: Router) => {
   */
   app.post(
     '/checkoutv2',
+    express.raw({type: 'application/json'}),
     body('nfts').isArray({min: 1}),
     body('nfts.*.nftAddress').not().isEmpty(), //
     oneOf([

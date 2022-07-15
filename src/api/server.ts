@@ -15,9 +15,9 @@ export const RESTServer = async () => {
   // todo: figure out how to lockdown; when i enable this everything breaks
 
   // api.use(helmet())
-  // api.disable('x-powered-by')
-  // api.use(cors)
-  // api.use(compression)
+  api.disable('x-powered-by')
+  api.use(cors)
+  api.use(compression)
   api.use((req, res, next) => {
     if (req.originalUrl === '/v0/payment/hook') {
       next()
