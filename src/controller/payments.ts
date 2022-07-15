@@ -97,7 +97,7 @@ export async function handleStripeHook(request: Request) {
 
       // send SMS!
       await SMSController.sendSMS(
-        '+614953153886',
+        '<mobile>',
         'Congratulations your purchase of <NFT Token> was successful!'
       )
       // Then define and call a function to handle the event payment_intent.succeeded
