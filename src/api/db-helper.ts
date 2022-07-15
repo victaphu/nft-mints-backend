@@ -34,8 +34,6 @@ export default class DbHelper {
 
   async connect() {
     this.client = new MongoClient(DbHelper.URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverApi: ServerApiVersion.v1,
     })
     await this.client.connect()
@@ -62,7 +60,7 @@ export default class DbHelper {
 
   async getUserByPhone(phone: string) {
     const collection = 'users'
-    const result = await this.db?.collection(collection).findOne({phone: phone});
+    const result = await this.db?.collection(collection).findOne({phone: phone})
     if (!result) return null
     return User.fromDatabase(result)
   }

@@ -7,7 +7,13 @@ function App() {
   const [page, setPage] = useState(0)
   const [filters, setFilters] = useState([])
   const [nfts, setNfts] = useState([])
+  const [creator, setCreator] = useState(0)
+  const [selectedNfts, setSelectedNfts] = useState([])
 
+  const [mobileNumber, setMobileNumber] = useState(12345)
+  const [smsCode, setSmsCode] = useState(1235)
+
+  // get list of nfts
   useEffect(() => {
     console.log('Fetching data')
     axios
@@ -19,28 +25,50 @@ function App() {
       .catch((e) => console.error(e))
   }, [filters, page])
 
-  // get list of nfts
-
   // let user select nft to purchase
+  async function purchaseNfts() {
+    const body = {
+      nfts: selectedNfts,
+      mobileNumber: mobileNumber,
+      smsCode: smsCode,
+      successUrl: 'url',
+      cancelUrl: 'cancel url',
+    }
+  }
+
+  function renderNft(nft) {
+    return (
+      <div>
+        {Object.keys(nft.metadata).map((tokenId) => {
+          return (
+            <div style={{display: 'inline-block', padding: '8px'}}>
+              <img height="200px" src={nft.metadata[tokenId].image}></img>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  if (nfts.length === 0) {
+    return <div>Loading ...</div>
+  }
 
   // select nft to purchase
-
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      Collection:{' '}
+      <select onChange={(event) => setCreator(event.target.value)}>
+        {nfts.map((nft, index) => {
+          return (
+            <option value={index} key={index}>
+              {nft.creator.name} - {nft.nftAddress}
+            </option>
+          )
+        })}
+      </select>
+      <h1>NFTs - {nfts[creator].creator.name}</h1>
+      <div>{renderNft(nfts[creator])}</div>
     </div>
   )
 }
