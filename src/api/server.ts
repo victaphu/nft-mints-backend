@@ -6,6 +6,7 @@ import {logger} from 'src/logger'
 import http, {Server} from 'http'
 import {config} from 'src/config'
 import payment from './payment'
+import sms from './smsgateway'
 import bodyParser from 'body-parser'
 const l = logger(module)
 
@@ -26,17 +27,21 @@ export const RESTServer = async () => {
   })
 
   api.use(bodyParser.urlencoded({extended: false}))
+  api.use(bodyParser.json())
 
   const minterRouter = Router({mergeParams: true})
   const paymentRouter = Router({mergeParams: true})
+  const smsRouter = Router({mergeParams: true})
 
   api.use('/v0/payment', paymentRouter)
   api.use('/v0/minter', minterRouter)
+  api.use('/v0/sms', smsRouter)
   let server: Server
 
   const close = () => server.close()
 
   payment(paymentRouter)
+  sms(smsRouter)
 
   l.info('REST API starting...')
   try {
