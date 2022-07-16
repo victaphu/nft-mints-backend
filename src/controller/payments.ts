@@ -1,7 +1,7 @@
 import {Request} from 'express'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
-import {TokenController} from '.'
+import {SMSController, TokenController} from '.'
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
@@ -96,8 +96,12 @@ export async function handleStripeHook(request: Request) {
       console.log('Received payment intent success', paymentIntent, paymentIntent.metadata)
 
       // send SMS!
-
+      await SMSController.sendSMS(
+        '<mobile>',
+        'Congratulations your purchase of <NFT Token> was successful!'
+      )
       // Then define and call a function to handle the event payment_intent.succeeded
+
       break
     // ... handle other event types
     case 'checkout.session.completed':

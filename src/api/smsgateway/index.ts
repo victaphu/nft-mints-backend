@@ -1,6 +1,6 @@
 import {Request, Response, Router} from 'express'
 import Twilio from 'twilio'
-import {body} from "express-validator";
+import {body} from 'express-validator'
 
 const accountId = process.env.TWILIO_ACCOUNT_ID
 const authToken = process.env.TWILIO_AUTH_TOKEN
@@ -50,7 +50,6 @@ const sendPostMintMessage = async (request: Request, response: Response) => {
   } catch (e) {
     return response.status(500).send(`Error: ${e.message}`)
   }
-
 }
 
 const init = (app: Router) => {
