@@ -94,14 +94,6 @@ export async function handleStripeHook(request: Request) {
   switch (event.type) {
     case 'payment_intent.succeeded':
       console.log('Received payment intent success', paymentIntent, paymentIntent.metadata)
-
-      // send SMS!
-      await SMSController.sendSMS(
-        '<mobile>',
-        'Congratulations your purchase of <NFT Token> was successful!'
-      )
-      // Then define and call a function to handle the event payment_intent.succeeded
-
       break
     // ... handle other event types
     case 'checkout.session.completed':
@@ -110,6 +102,14 @@ export async function handleStripeHook(request: Request) {
         paymentIntent,
         paymentIntent.metadata
       )
+
+      // send SMS!
+      await SMSController.sendSMS(
+        paymentIntent.metadata.mobileNumber,
+        'Congratulations your purchase of <NFT Token> was successful!'
+      )
+      // Then define and call a function to handle the event payment_intent.succeeded
+
       break
     default:
       console.log(`Unhandled event type ${event.type}`)

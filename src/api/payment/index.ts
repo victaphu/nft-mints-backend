@@ -1,5 +1,4 @@
 import {Request, Response, Router} from 'express'
-import Stripe from 'stripe'
 
 import express from 'express'
 import {body, oneOf, validationResult} from 'express-validator'
@@ -8,14 +7,6 @@ import {logger} from 'src/logger'
 import {PaymentController} from 'src/controller'
 
 const l = logger(module)
-
-// This is your Stripe CLI webhook secret for testing your endpoint locally.
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
-const stripeAPIKey = process.env.STRIPE_API_KEY
-const stripe = new Stripe(stripeAPIKey!, {
-  apiVersion: '2020-08-27',
-  typescript: true,
-})
 
 const checkout = async (request: Request, response: Response) => {
   // note: checkout should also include the requested smsCode

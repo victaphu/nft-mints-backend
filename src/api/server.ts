@@ -33,7 +33,7 @@ export const RESTServer = async () => {
   })
 
   api.use(bodyParser.urlencoded({extended: false}))
-  api.use(bodyParser.json())
+  // api.use(bodyParser.json()) // need this comment out so our stripe integration will work
 
   const minterRouter = Router({mergeParams: true})
   const paymentRouter = Router({mergeParams: true})
