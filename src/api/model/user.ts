@@ -1,10 +1,12 @@
-import {randomUUID} from 'crypto'
+import crypto, {randomUUID} from 'crypto'
 
 export default class User {
   public id: string | undefined
   public uuid = ''
   public phone = ''
   public pendingCode = ''
+  public codeHash = ''
+  public lastSentCode: number = 0
 
   constructor(id: string, uuid: string, phone: string) {
     this.id = id
@@ -14,7 +16,9 @@ export default class User {
 
   verify(code: string) {
     // TODO hash code and compare to pendingCode
-    return true
+    const hash = crypto.createHash('sha256').update(code).digest('hex')
+    console.log(hash, code, this.pendingCode, this.codeHash)
+    return this.pendingCode === code && this.codeHash === hash
   }
 
   static generateUUID(): string {
@@ -24,6 +28,7 @@ export default class User {
   static fromDatabase(result: any) {
     const u = new User(result.id, result.uuid, result.phone)
     u.pendingCode = result.pendingCode
+    u.codeHash = result.codeHash
     return u
   }
 }

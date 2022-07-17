@@ -5,6 +5,7 @@ import {body, oneOf, validationResult} from 'express-validator'
 
 import {logger} from 'src/logger'
 import {PaymentController} from 'src/controller'
+import {errorToObject} from '../transport'
 
 const l = logger(module)
 
@@ -26,16 +27,21 @@ const checkout = async (request: Request, response: Response) => {
     return
   }
 
-  const session = await PaymentController.checkout({
-    tokenId,
-    tokenAddress,
-    mobileNumber,
-    smsCode,
-    successUrl,
-    cancelUrl,
-  })
-
-  response.redirect(303, session.url!)
+  try {
+    const session = await PaymentController.checkout({
+      tokenId,
+      tokenAddress,
+      mobileNumber,
+      smsCode,
+      successUrl,
+      cancelUrl,
+    })
+    response.redirect(303, session.url!)
+  } catch (err) {
+    console.log(err)
+    response.status(400).send(errorToObject(err))
+    return
+  }
 }
 
 const checkoutv2 = async (request: Request, response: Response) => {
@@ -50,32 +56,31 @@ const checkoutv2 = async (request: Request, response: Response) => {
     return
   }
 
-  if (smsCode !== '12345') {
-    l.error('SMS Code failed')
-    response.status(400).send({status: 'failed', message: 'invalid sms code'})
+  try {
+    const session = await PaymentController.checkoutv2({
+      nfts,
+      mobileNumber,
+      smsCode,
+      successUrl,
+      cancelUrl,
+    })
+    response.status(200).json({url: session.url!})
+  } catch (err) {
+    console.log(err)
+    response.status(400).send(errorToObject(err))
     return
   }
-
-  const session = await PaymentController.checkoutv2({
-    nfts,
-    mobileNumber,
-    smsCode,
-    successUrl,
-    cancelUrl,
-  })
-
-  response.redirect(303, session.url!)
 }
 
-const paymentHook = (request: Request, response: Response) => {
+const paymentHook = async (request: Request, response: Response) => {
   console.log('Received request')
   const sig = request.headers['stripe-signature']
 
   try {
-    PaymentController.handleStripeHook(request)
+    await PaymentController.handleStripeHook(request)
   } catch (err) {
     console.log(err)
-    response.status(400).send(`Webhook Error: ${err.message}`)
+    response.status(400).send(errorToObject(err))
     return
   }
 

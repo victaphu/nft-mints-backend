@@ -55,7 +55,18 @@ export default class DbHelper {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'user already exists')
     }
     const objToAdd = {...user, dateCreated: new Date().toISOString()}
-    return this.db?.collection(collection).insertOne(user)
+    return this.db?.collection(collection).insertOne(objToAdd)
+  }
+
+  async updateUser(user: User) {
+    const collection = 'users'
+    const existingUser = await this.getUserByPhone(user.phone)
+    if (!existingUser) {
+      throw new DbError(DbError.Type.UNINITIALIZED, 'user does not exist')
+    }
+    return this.db
+      ?.collection(collection)
+      .findOneAndUpdate({uuid: user.uuid}, {$set: {...user}}, {upsert: true})
   }
 
   async getUserByPhone(phone: string) {
@@ -89,7 +100,27 @@ export default class DbHelper {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'token already exists')
     }
     const objToAdd = {...token, dateCreated: new Date().toISOString()}
-    return this.db?.collection(collection).insertOne(token)
+    return this.db?.collection(collection).insertOne(objToAdd)
+  }
+
+  async createSmsTokenFor(phone: string, pendingCode: string, codeHash: string) {
+    let user = await this.getUserByPhone(phone)
+    if (!user) {
+      user = new User(User.generateUUID(), User.generateUUID(), phone)
+      await this.createUser(user)
+    }
+    // user last sent code was less than 60 seconds ago ... reject
+    if (user.lastSentCode > Date.now() + 60 * 1000) {
+      throw new DbError(
+        DbError.Type.UNINITIALIZED,
+        'last sent code less than 60 seconds, wait before sending'
+      )
+    }
+    user.pendingCode = pendingCode
+    user.codeHash = codeHash
+    user.lastSentCode = Date.now()
+
+    return await this.updateUser(user)
   }
 }
 

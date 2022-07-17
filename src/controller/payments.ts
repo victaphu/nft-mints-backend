@@ -59,20 +59,27 @@ export async function checkoutv2({
   successUrl,
   cancelUrl,
 }: PaymentCheckoutv2) {
-  const tokensPurchase = nfts
-    .map((nft: NFTInterface) => {
-      nft.internal = TokenController.fetchTokenByAddress(nft.nftAddress)
-      return nft
+  const isValid = await SMSController.verifySMSCode(mobileNumber, smsCode.toString())
+
+  if (!isValid) {
+    throw new Error('Failed to verify SMS Code')
+  }
+
+  const lineItems: any[] = []
+
+  await Promise.all(
+    nfts.map(async (nft: NFTInterface) => {
+      const internal = await TokenController.fetchTokenByAddress(nft.nftAddress)
+      const tokens = internal?.tokens
+        .filter((t) => nft.nftIds!.indexOf(t.tokenId) >= 0)
+        .map((t) => lineItems.push({price: t.stripePriceId, quantity: 1}))
     })
-    .filter((nft: any) => nft.internal)
+  )
+
+  console.log(lineItems)
 
   const session = await stripe.checkout.sessions.create({
-    line_items: tokensPurchase.map((token: any) => {
-      return {
-        price: token.internal.stripeProductId,
-        quantity: token.quantity || token.nftIds.length,
-      }
-    }),
+    line_items: lineItems,
     mode: 'payment',
     success_url: successUrl,
     cancel_url: cancelUrl,

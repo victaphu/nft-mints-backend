@@ -1,16 +1,11 @@
 import {Request, Response, Router} from 'express'
 import Twilio from 'twilio'
-import {body} from 'express-validator'
+import {SMSController} from 'src/controller'
 
 const accountId = process.env.TWILIO_ACCOUNT_ID
 const authToken = process.env.TWILIO_AUTH_TOKEN
 const fromPhone = process.env.TWILIO_FROM_PHONE
 const twilioClient = Twilio(accountId, authToken)
-
-const generateSecret = () => {
-  // TODO: Generate secret token
-  return {raw: 'secret!', hash: 'hash_of_secret'}
-}
 
 const sendVerificationMessage = async (request: Request, response: Response) => {
   const destination = request.body.phone
@@ -18,14 +13,9 @@ const sendVerificationMessage = async (request: Request, response: Response) => 
     return response.status(400).send(`Error: Invalid phone number ${destination}`)
   }
   // REFACTOR: Split logic into SMS module
-  const secret = generateSecret()
-  const content = `${secret.raw} is your verification code for NFT Mints.`
+
   try {
-    await twilioClient.messages.create({
-      to: destination,
-      from: fromPhone,
-      body: content,
-    })
+    await SMSController.sendSMSCode(destination)
     return response.send()
   } catch (e) {
     return response.status(500).send(`Error: ${e.message}`)
