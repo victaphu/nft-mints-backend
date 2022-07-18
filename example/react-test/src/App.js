@@ -8,7 +8,9 @@ const REDIRECT_URL_SUCCESS = 'http://localhost:3001/'
 const REDIRECT_URL_FAILURE = 'http://localhost:3001/'
 
 function App() {
+  // @ts-ignore
   const [page, setPage] = useState(0)
+  // @ts-ignore
   const [filters, setFilters] = useState([])
   const [nfts, setNfts] = useState([])
   const [creator, setCreator] = useState(0)
@@ -45,6 +47,7 @@ function App() {
         }
       }
       nfts[token.nftAddress].nftIds.push(token.tokenId)
+      return token
     })
 
     const body = {
