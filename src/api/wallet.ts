@@ -1,7 +1,7 @@
 import ethers from 'ethers'
 // import {createRequire} from 'module'
 // const _require = createRequire(import.meta.url)
-const V0ERC721ABI = require('') // TODO
+// const V0ERC721ABI = require('') // TODO
 
 import User from './model/user'
 import Token from './model/token'
@@ -32,7 +32,7 @@ export default class Wallet {
     if (!owner || !owner.verify(verificationCode)) throw new Error('Invalid verification code')
 
     // TODO
-    const contract = new ethers.Contract(token.contractAddress, V0ERC721ABI, this.provider)
+    // const contract = new ethers.Contract(token.contractAddress, V0ERC721ABI, this.provider)
   }
 
   async mint(owner: User) {
