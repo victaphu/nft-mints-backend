@@ -8,8 +8,8 @@ const REDIRECT_URL_SUCCESS = 'http://localhost:3001/'
 const REDIRECT_URL_FAILURE = 'http://localhost:3001/'
 
 function App() {
-  const [page, setPage] = useState(0)
-  const [filters, setFilters] = useState([])
+  const [page, ] = useState(0)
+  const [filters, ] = useState([])
   const [nfts, setNfts] = useState([])
   const [creator, setCreator] = useState(0)
   const [selectedNfts, setSelectedNfts] = useState([])
@@ -45,6 +45,7 @@ function App() {
         }
       }
       nfts[token.nftAddress].nftIds.push(token.tokenId)
+      return token
     })
 
     const body = {
@@ -167,7 +168,7 @@ function App() {
               style={{display: 'inline-block', margin: '8px', padding: '4px', border: 'solid'}}
             >
               <div>
-                <img height="200px" src={token.metadata.image}></img>
+                <img height='200px' alt='token for nft' src={token.metadata.image}></img>
                 <br />
                 {renderTokenDetails(token)}
                 {renderSelection(nft.type, token)}
