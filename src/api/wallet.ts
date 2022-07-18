@@ -1,7 +1,6 @@
 import ethers from 'ethers'
-// import {createRequire} from 'module'
-// const _require = createRequire(import.meta.url)
-const V0ERC721ABI = require('') // TODO
+// @ts-ignore
+import {abi} from './abi/MinterNFTV0'
 
 import User from './model/user'
 import Token from './model/token'
@@ -31,11 +30,33 @@ export default class Wallet {
 
     if (!owner || !owner.verify(verificationCode)) throw new Error('Invalid verification code')
 
-    // TODO
-    const contract = new ethers.Contract(token.contractAddress, V0ERC721ABI, this.provider)
+    const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
+    return contract
+      .connect(this.wallet)
+      .safeTransferFrom(this.wallet.getAddress(), destination, token.sequence)
   }
 
-  async mint(owner: User) {
-    // TODO
+  async mint(owner: User, token: Token) {
+    let conn
+    try {
+      const db = new DbHelper()
+      conn = await db.connect()
+
+      token.addMintIdStamp()
+      await conn.updateToken(token)
+
+      const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
+      const tx = await contract
+        .connect(this.wallet)
+        .mint(this.wallet.getAddress(), token.uniqueMintId)
+      await tx.wait()
+
+      const sequence = await contract.callStatic.mintIdToTokenId(token.uniqueMintId)
+      token.sequence = sequence
+      await conn.updateToken(token)
+      return token
+    } finally {
+      await conn?.close()
+    }
   }
 }

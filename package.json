@@ -29,6 +29,7 @@
     "react-icons": "^4.4.0",
     "stripe": "^9.11.0",
     "twilio": "^3.78.0",
+    "web3": "^1.7.4",
     "zerg": "^2.1.2"
   },
   "devDependencies": {

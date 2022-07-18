@@ -104,10 +104,17 @@ export default class DbHelper {
     return this.db?.collection(collection).insertOne(objToAdd)
   }
 
+  async updateToken(token: Token) {
+    const collection = 'tokens'
+    return this.db
+      ?.collection(collection)
+      .findOneAndUpdate({id: token.id}, {$set: {...token}}, {upsert: true})
+  }
+
   async createSmsTokenFor(phone: string, pendingCode: string, codeHash: string) {
     let user = await this.getUserByPhone(phone)
     if (!user) {
-      user = new User(User.generateUUID(), User.generateUUID(), phone)
+      user = new User(User.generateUUID(), phone)
       await this.createUser(user)
     }
     // user last sent code was less than 60 seconds ago ... reject
