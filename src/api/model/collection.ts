@@ -9,6 +9,8 @@ export default class Collection {
   public maxMint: number
   public uuid: string | undefined
   public userUuid: string | undefined // todo: i think a collection needs an owner; can we make User the owner of a collection?
+  public productId: string | undefined // stripe product id
+  public priceId: string | undefined // strip price id
 
   constructor(
     _title: string,
@@ -43,7 +45,9 @@ export default class Collection {
     )
     t.id = result.id
     t.uuid = result.uuid
+    t.priceId = result.priceId
     t.userUuid = result.userUuid
+    t.productId = result.productId
     return t
   }
 }

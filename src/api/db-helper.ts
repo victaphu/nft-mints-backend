@@ -142,6 +142,7 @@ export default class DbHelper {
   async getCollectionByUUID(uuid: string) {
     const mongoCollection = 'collections'
     const result = await this.db?.collection(mongoCollection).findOne({uuid: uuid})
+    console.log('Result is', result, uuid)
     if (!result) return null
     return Collection.fromDatabase(result)
   }

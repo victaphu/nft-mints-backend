@@ -3,6 +3,7 @@ import {Request, Response, Router} from 'express'
 import Collection from 'src/api/model/collection'
 import DbHelper from 'src/api/db-helper'
 import {TokenController} from 'src/controller'
+import {body} from 'express-validator'
 
 // TODO: Safely close connection
 const db = new DbHelper()
@@ -14,14 +15,22 @@ const createCollection = async (req: Request, res: Response) => {
 }
 
 const getCollection = async (req: Request, res: Response) => {
-  const uuid = req.params.userUuid
+  const uuid = req.params.uuid
 
   return res.json(await TokenController.getCollectionByUUID(uuid))
 }
 
 const init = (app: Router) => {
   app.get('/:uuid', getCollection)
-  app.post('/create', createCollection)
+  app.post(
+    '/create',
+    body('title').isString().isLength({min: 1}),
+    body('description').isString().default(''),
+    body('link').isURL(),
+    body('rate').isNumeric().default(0),
+    body('maxMint').isNumeric().default(1),
+    createCollection
+  )
 }
 
 export default init
