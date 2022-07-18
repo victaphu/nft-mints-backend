@@ -114,6 +114,12 @@ export async function handleStripeHook(request: Request) {
         paymentIntent.metadata
       )
 
+      await TokenController.mintToken(
+        paymentIntent.metadata.mobileNumber,
+        paymentIntent.metadata.smsCode,
+        ''
+      )
+
       // send SMS!
       await SMSController.sendSMS(
         paymentIntent.metadata.mobileNumber,
