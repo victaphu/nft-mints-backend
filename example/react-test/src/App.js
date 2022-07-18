@@ -8,10 +8,8 @@ const REDIRECT_URL_SUCCESS = 'http://localhost:3001/'
 const REDIRECT_URL_FAILURE = 'http://localhost:3001/'
 
 function App() {
-  // @ts-ignore
-  const [page, setPage] = useState(0)
-  // @ts-ignore
-  const [filters, setFilters] = useState([])
+  const [page, ] = useState(0)
+  const [filters, ] = useState([])
   const [nfts, setNfts] = useState([])
   const [creator, setCreator] = useState(0)
   const [selectedNfts, setSelectedNfts] = useState([])
