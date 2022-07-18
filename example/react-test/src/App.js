@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react'
 import axios from 'axios'
 import * as FA from 'react-icons/fa'
 
-const GATEWAY = 'https://smsnftgateway.herokuapp.com/'
+const GATEWAY = 'https://smsnftgateway.herokuapp.com'
 const REDIRECT_URL_SUCCESS = 'http://localhost:3001/'
 const REDIRECT_URL_FAILURE = 'http://localhost:3001/'
 

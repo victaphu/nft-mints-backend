@@ -71,8 +71,8 @@ export async function checkoutv2({
     nfts.map(async (nft: NFTInterface) => {
       const internal = await TokenController.fetchTokenByAddress(nft.nftAddress)
       const tokens = internal?.tokens
-        .filter((t) => nft.nftIds!.indexOf(t.tokenId) >= 0)
-        .map((t) => lineItems.push({price: t.stripePriceId, quantity: 1}))
+        .filter((t: any) => nft.nftIds!.indexOf(t.tokenId) >= 0)
+        .map((t: any) => lineItems.push({price: t.stripePriceId, quantity: 1}))
     })
   )
 
