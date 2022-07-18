@@ -8,6 +8,7 @@ import {config} from 'src/config'
 import payment from './payment'
 import sms from './smsgateway'
 import token from './token'
+import collection from './collection'
 
 import bodyParser from 'body-parser'
 const l = logger(module)
@@ -39,11 +40,13 @@ export const RESTServer = async () => {
   const paymentRouter = Router({mergeParams: true})
   const smsRouter = Router({mergeParams: true})
   const tokensRouter = Router({mergeParams: true})
+  const collectionsRouter = Router({mergeParams: true})
 
   api.use('/v0/payment', paymentRouter)
   api.use('/v0/minter', minterRouter)
   api.use('/v0/sms', smsRouter)
   api.use('/v0/tokens', tokensRouter)
+  api.use('/v0/collections', collectionsRouter)
 
   let server: Server
 
@@ -52,6 +55,7 @@ export const RESTServer = async () => {
   payment(paymentRouter)
   sms(smsRouter)
   token(tokensRouter)
+  collection(collectionsRouter)
 
   l.info('REST API starting...')
   try {
