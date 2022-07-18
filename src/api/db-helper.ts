@@ -1,7 +1,7 @@
 import {MongoClient, ServerApiVersion, Db} from 'mongodb'
 import User from './model/user'
 import Token from './model/token'
-import Collection from "src/api/model/collection";
+import Collection from 'src/api/model/collection'
 
 export default class DbHelper {
   private client: MongoClient | undefined
@@ -138,7 +138,7 @@ export default class DbHelper {
   async createCollection(collection: Collection) {
     const mongoCollection = 'collections'
     const existingToken = await this.getToken({
-      id: collection.id
+      id: collection.id,
     })
     if (existingToken) {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'collection already exists')
@@ -153,11 +153,10 @@ export default class DbHelper {
   async getCollectionByUUID(uuid: string) {
     const mongoCollection = 'collections'
     const result = await this.db?.collection(mongoCollection).findOne({uuid: uuid})
+    console.log('Result is', result, uuid)
     if (!result) return null
     return Collection.fromDatabase(result)
   }
-
-
 }
 
 class DbError {
