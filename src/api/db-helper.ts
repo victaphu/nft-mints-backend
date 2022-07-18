@@ -1,6 +1,7 @@
 import {MongoClient, ServerApiVersion, Db} from 'mongodb'
 import User from './model/user'
 import Token from './model/token'
+import Collection from "src/api/model/collection";
 
 export default class DbHelper {
   private client: MongoClient | undefined
@@ -122,6 +123,30 @@ export default class DbHelper {
 
     return await this.updateUser(user)
   }
+
+  async createCollection(collection: Collection) {
+    const mongoCollection = 'collections'
+    const existingToken = await this.getToken({
+      id: collection.id
+    })
+    if (existingToken) {
+      throw new DbError(DbError.Type.ALREADY_EXISTS, 'collection already exists')
+    }
+    if (!collection.uuid) {
+      collection.addUUIDStamp()
+    }
+    const objToAdd = {...collection, dateCreated: new Date().toISOString()}
+    return this.db?.collection(mongoCollection).insertOne(objToAdd)
+  }
+
+  async getCollectionByUUID(uuid: string) {
+    const mongoCollection = 'collections'
+    const result = await this.db?.collection(mongoCollection).findOne({uuid: uuid})
+    if (!result) return null
+    return Collection.fromDatabase(result)
+  }
+
+
 }
 
 class DbError {
