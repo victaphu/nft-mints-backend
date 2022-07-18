@@ -77,17 +77,21 @@ export default class DbHelper {
     return User.fromDatabase(result)
   }
 
-  async getUserByUUID(uuid: string) {
+  async getUserByUUID(uuid: string): Promise<User> {
     const collection = 'users'
     const result = await this.db?.collection(collection).findOne({uuid: uuid})
-    if (!result) return null
+    if (!result) {
+      throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
+    }
     return User.fromDatabase(result)
   }
 
-  async getToken(filter: any) {
+  async getToken(filter: any): Promise<Token> {
     const collection = 'tokens'
     const result = await this.db?.collection(collection).findOne(filter)
-    if (!result) return null
+    if (!result) {
+      throw new DbError(DbError.Type.UNINITIALIZED, `Specified token filter found no match`)
+    }
     return Token.fromDatabase(result)
   }
 
