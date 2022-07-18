@@ -1,4 +1,4 @@
-import {randomUUID} from "crypto";
+import {randomUUID} from 'crypto'
 
 export default class Collection {
   public id: string | undefined
@@ -8,6 +8,7 @@ export default class Collection {
   public rate: number
   public maxMint: number
   public uuid: string | undefined
+  public userUuid: string | undefined // todo: i think a collection needs an owner; can we make User the owner of a collection?
 
   constructor(
     _title: string,
@@ -42,6 +43,7 @@ export default class Collection {
     )
     t.id = result.id
     t.uuid = result.uuid
+    t.userUuid = result.userUuid
     return t
   }
 }

@@ -1,4 +1,6 @@
 import {Request} from 'express'
+import DbHelper from 'src/api/db-helper'
+import Wallet from 'src/api/wallet'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
 import {SMSController, TokenController} from '.'
@@ -86,6 +88,7 @@ export async function checkoutv2({
     metadata: {
       nfts: JSON.stringify(nfts),
       mobileNumber,
+      smsCode,
     },
   })
   return session
@@ -98,6 +101,7 @@ export async function handleStripeHook(request: Request) {
   // Handle the event
   // console.log(event.type, event.data.object)
   const paymentIntent: any = event.data.object
+
   switch (event.type) {
     case 'payment_intent.succeeded':
       console.log('Received payment intent success', paymentIntent, paymentIntent.metadata)
