@@ -168,7 +168,7 @@ function App() {
               style={{display: 'inline-block', margin: '8px', padding: '4px', border: 'solid'}}
             >
               <div>
-                <img height='200px' alt='token image' src={token.metadata.image}></img>
+                <img height='200px' alt='token for nft' src={token.metadata.image}></img>
                 <br />
                 {renderTokenDetails(token)}
                 {renderSelection(nft.type, token)}
