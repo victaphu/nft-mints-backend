@@ -32,9 +32,11 @@ export default class Wallet {
     if (!owner || !owner.verify(verificationCode)) throw new Error('Invalid verification code')
 
     const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
-    return contract
+    const tx = await contract
       .connect(this.wallet)
       .safeTransferFrom(this.wallet.getAddress(), destination, token.sequence)
+    await tx.wait()
+    return
   }
 
   async mintIdToTokenId(address: string, mintId: BigNumber | string) {

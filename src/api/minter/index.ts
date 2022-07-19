@@ -35,9 +35,9 @@ const initClaim = async (req: Request, res: Response) => {
   let conn
   try {
     conn = await new DbHelper().connect()
-
-    // TODO
-    // initializeClaimCtl(owner)
+    const owner = await conn.getUserByUUID(req.params.owner)
+    await initializeClaimCtl(owner)
+    res.status(200)
   } catch (e) {
     res.status(500).json(e)
   } finally {
@@ -49,10 +49,14 @@ const finalizeClaim = async (req: Request, res: Response) => {
   let conn
   try {
     conn = await new DbHelper().connect()
+    const owner = req.body.owner
+    const {sequence, contract} = req.body
+    const token = await conn.getToken({contractAddress: contract, sequence: sequence})
 
-    // TODO
-    // finalizeClaimCtl(owner, token, req.body.destination, req.body.smsCode)
+    await finalizeClaimCtl(owner, token, req.body.destination, req.body.smsCode)
+    res.status(200)
   } catch (e) {
+    console.error(e)
     res.status(500).json(e)
   } finally {
     conn?.close()
@@ -71,8 +75,8 @@ const getSequenceIdFromMintID = async function (req: Request, res: Response) {
 const init = (app: Router) => {
   l.info('Initialise minter endpoints')
   app.get('/chain-mint/:owner/:collection', doMint)
-  app.post('/claim/init', initClaim)
-  app.post('/claim/final/:token', finalizeClaim)
+  app.get('/claim/init/:owner', initClaim)
+  app.post('/claim/final/', finalizeClaim)
   app.get('/mint-id/:contract/:id', getSequenceIdFromMintID)
 
   app.get('/', (req, res) => {
