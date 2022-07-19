@@ -97,14 +97,25 @@ export default class DbHelper {
 
   async createToken(token: Token) {
     const collection = 'tokens'
-    const existingToken = await this.getToken({
-      contractAddress: token.contractAddress,
-      id: token.id,
-    })
+    let existingToken
+    try {
+      existingToken = await this.getToken({
+        contractAddress: token.contractAddress,
+        id: token.id,
+      })
+    } catch (e) {
+      if (e.code !== DbError.Type.UNINITIALIZED) {
+        throw e
+      }
+    }
     if (existingToken) {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'token already exists')
     }
-    const objToAdd = {...token, dateCreated: new Date().toISOString()}
+    const objToAdd = {
+      ...token,
+      dateCreated: new Date().toISOString(),
+      sequence: token.sequence.toString(),
+    }
     return this.db?.collection(collection).insertOne(objToAdd)
   }
 
@@ -112,7 +123,7 @@ export default class DbHelper {
     const collection = 'tokens'
     return this.db
       ?.collection(collection)
-      .findOneAndUpdate({id: token.id}, {$set: {...token}}, {upsert: true})
+      .findOneAndUpdate({id: token.id}, {$set: {...token, sequence: token.sequence.toString()}}, {upsert: true})
   }
 
   async createSmsTokenFor(phone: string, pendingCode: string, codeHash: string) {

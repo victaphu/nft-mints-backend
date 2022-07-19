@@ -96,6 +96,12 @@ export async function getCollectionByUUID(uuid: string) {
   return await con.getCollectionByUUID(uuid)
 }
 
+export async function getCollectionById(id: string) {
+  const db = new DbHelper()
+  const con = await db.connect()
+  return await con.getCollectionsByFilter({_id: id})
+}
+
 export async function getCollectionByUser(userUuid: string) {
   console.log('Get collection', userUuid)
   const db = new DbHelper()

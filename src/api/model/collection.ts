@@ -8,7 +8,7 @@ export default class Collection {
   public rate: number
   public maxMint: number
   public uuid: string | undefined
-  public collectionAddress: string = '0xdabc3A9a7e8d6448eD7846195f93278CE3A9c61B'
+  public collectionAddress: string = '0x7f273afb22d33432e341de43484f9c7dac28bb5e'
   public userUuid: string | undefined // todo: i think a collection needs an owner; can we make User the owner of a collection?
   public productId: string | undefined // stripe product id
   public priceId: string | undefined // strip price id

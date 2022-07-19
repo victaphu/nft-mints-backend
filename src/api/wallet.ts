@@ -1,4 +1,4 @@
-import {ethers} from 'ethers'
+import {BigNumber, ethers} from 'ethers'
 // @ts-ignore
 import {abi} from './abi/MinterNFTV0'
 
@@ -37,6 +37,14 @@ export default class Wallet {
       .safeTransferFrom(this.wallet.getAddress(), destination, token.sequence)
   }
 
+  async mintIdToTokenId(address: string, mintId: BigNumber | string) {
+    const contract = new ethers.Contract(address, abi, this.provider)
+
+    console.log('Finding sequence ID')
+    const sequence = await contract.callStatic.mintIdToTokenId(BigNumber.from(mintId))
+    return sequence
+  }
+
   async mint(owner: User, collection: Collection) {
     let conn
     try {
@@ -49,13 +57,15 @@ export default class Wallet {
       token.addMintIdStamp()
       await conn.createToken(token)
 
+      console.log('Minting transaction')
       const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
       const tx = await contract
         .connect(this.wallet)
         .mint(this.wallet.getAddress(), token.uniqueMintId)
       await tx.wait()
 
-      const sequence = await contract.callStatic.mintIdToTokenId(token.uniqueMintId)
+      console.log('Finding sequence ID')
+      const sequence = await contract.callStatic.mintIdToTokenId(BigNumber.from(token.uniqueMintId))
       token.sequence = sequence
       await conn.updateToken(token)
       return token

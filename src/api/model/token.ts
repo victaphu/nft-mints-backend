@@ -27,7 +27,12 @@ export default class Token {
   }
 
   static fromDatabase(result: any): Token {
-    const t = new Token(result.contractAddress, result.sequence, result.ownerUUID, result.isClaimed)
+    const t = new Token(
+      result.contractAddress,
+      BigInt(result.sequence),
+      result.ownerUUID,
+      result.isClaimed
+    )
     t.id = result.id
     return t
   }
