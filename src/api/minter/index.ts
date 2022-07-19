@@ -18,8 +18,7 @@ const doMint = async (req: Request, res: Response) => {
     // Refactor: "owner" will likely come from session after authentication is in place
     conn = await new DbHelper().connect()
     const owner = await conn.getUserByUUID(req.body.owner)
-    // Note: changed from token to collection (todo: update accordingly)
-    const collection = await conn.getCollectionByUUID(req.body.token)
+    const collection = await conn.getCollectionByUUID(req.body.collection)
     // Todo: handle null case
     await mint(owner, collection!)
   } catch (e) {
@@ -59,7 +58,7 @@ const finalizeClaim = async (req: Request, res: Response) => {
 
 const init = (app: Router) => {
   l.info('Initialise minter endpoints')
-  app.get('/chain-mint/:owner/:token', doMint)
+  app.get('/chain-mint/:owner/:collection', doMint)
   app.post('/claim/init', initClaim)
   app.post('/claim/final/:token', finalizeClaim)
 
