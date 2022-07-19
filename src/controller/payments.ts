@@ -2,7 +2,7 @@ import {Request} from 'express'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
 import {SMSController, TokenController} from '.'
-import {RequestInfo, RequestInit} from 'node-fetch'
+import fetch, {RequestInfo, RequestInit} from 'node-fetch'
 import DbHelper from 'src/api/db-helper'
 import mint from './mint'
 // const fetch = (url: RequestInfo, init?: RequestInit) =>
