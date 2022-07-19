@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import {ethers} from 'ethers'
 // @ts-ignore
 import {abi} from './abi/MinterNFTV0'
 

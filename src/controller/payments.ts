@@ -2,7 +2,11 @@ import {Request} from 'express'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
 import {SMSController, TokenController} from '.'
-import fetch from 'node-fetch'
+import {RequestInfo, RequestInit} from 'node-fetch'
+import DbHelper from 'src/api/db-helper'
+import mint from './mint'
+// const fetch = (url: RequestInfo, init?: RequestInit) =>
+//   import('node-fetch').then(({default: fetch}) => fetch(url, init))
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
@@ -11,6 +15,22 @@ const stripe = new Stripe(stripeAPIKey!, {
   apiVersion: '2020-08-27',
   typescript: true,
 })
+
+// Refactor: move to fetch of api instead of this workaround; having issues with fetch complaining about ES Module
+async function doMint(userUuid: string, token: string) {
+  let conn
+  try {
+    // Refactor: "owner" will likely come from session after authentication is in place
+    conn = await new DbHelper().connect()
+    const owner = await conn.getUserByUUID(userUuid)
+    // Note: changed from token to collection (todo: update accordingly)
+    const collection = await conn.getCollectionByUUID(token)
+    // Todo: handle null case
+    await mint(owner, collection!)
+  } finally {
+    conn?.close()
+  }
+}
 
 export async function checkout({
   tokenId,
@@ -124,9 +144,10 @@ export async function handleStripeHook(request: Request) {
 
       // on success call the chain-mint api
       // TODO: figure out how to secure this api, only the payment controller should have access to this
-      await fetch(
-        `${process.env.SERVER_ENDPOINT_API}/v0/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
-      )
+      // await fetch(
+      //   `${process.env.SERVER_ENDPOINT_API}/v0/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
+      // )
+      doMint(paymentIntent.metadata.userId, nfts[0].collectionUuid)
 
       break
     default:

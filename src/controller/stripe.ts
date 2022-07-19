@@ -16,7 +16,7 @@ export async function registerProduct(
   image: string
 ) {
   console.log('Creating product:', arguments)
-  const product = await stripe.products.create({
+  const payload: any = {
     name: name,
     description: description,
     default_price_data: {
@@ -27,8 +27,11 @@ export async function registerProduct(
     metadata: {
       collectionUuid: collectionUuid,
     },
-    images: [image],
-  })
+  }
+  if (image && image.length > 0) {
+    payload.images = [image]
+  }
+  const product = await stripe.products.create(payload)
   console.log('product created: ', product)
   return product
 }

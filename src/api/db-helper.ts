@@ -137,9 +137,7 @@ export default class DbHelper {
 
   async createCollection(collection: Collection) {
     const mongoCollection = 'collections'
-    const existingToken = await this.getToken({
-      id: collection.id,
-    })
+    const existingToken = await this.getCollectionByUUID(collection.uuid!)
     if (existingToken) {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'collection already exists')
     }
@@ -148,6 +146,20 @@ export default class DbHelper {
     }
     const objToAdd = {...collection, dateCreated: new Date().toISOString()}
     return this.db?.collection(mongoCollection).insertOne(objToAdd)
+  }
+
+  async getCollectionsByFilter(filter: any) {
+    const mongoCollection = 'collections'
+    const result = await this.db?.collection(mongoCollection).find(filter) // TODO: limit returned reuslts
+    if (!result) return null
+
+    const collections: Collection[] = []
+    const resultArray = await result.toArray()
+
+    resultArray.forEach((r) => {
+      collections.push(Collection.fromDatabase(r))
+    })
+    return collections
   }
 
   async getCollectionByUUID(uuid: string) {

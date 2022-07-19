@@ -48,8 +48,12 @@ export async function createCollection(
   link: string | '',
   rate: number | 0,
   maxMint: number | 1,
-  userId: string
+  userId: string,
+  collectionImage: string | ''
 ) {
+  if (+rate < 5) {
+    throw new Error('Rate must be greater than $5')
+  }
   console.log(arguments)
   const c = new Collection(
     title || 'Anonymous Collection',
@@ -60,13 +64,16 @@ export async function createCollection(
   )
   // Refactor: "owner" will likely come from session after authentication is in place
   c.userUuid = userId
+  c.collectionImage = collectionImage
+
+  const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
 
   const product = await StripeController.registerProduct(
     title || 'Anonymous Collection',
     description || 'Anonymous Collection',
-    rate,
+    tokenPrice,
     c.addUUIDStamp(),
-    link
+    collectionImage
   )
 
   c.productId = product.id
@@ -87,4 +94,19 @@ export async function getCollectionByUUID(uuid: string) {
 
   const con = await db.connect()
   return await con.getCollectionByUUID(uuid)
+}
+
+export async function getCollectionByUser(userUuid: string) {
+  console.log('Get collection', userUuid)
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  return await con.getCollectionsByFilter({userUuid})
+}
+
+export async function getCollections() {
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  return await con.getCollectionsByFilter({})
 }
