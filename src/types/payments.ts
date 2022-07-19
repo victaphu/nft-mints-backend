@@ -7,23 +7,9 @@ export interface PaymentCheckout {
   cancelUrl: string
 }
 
-/*
-      nfts: [
-        { // minting!
-          nftAddress: "0x00",
-          quantity: 2
-        },
-        { // purchase existing
-          nftAddress: "0x00",
-          nftIds: [1,2,3]
-        }
-      ],
-*/
 export interface NFTInterface {
-  nftAddress: string
-  quantity?: number
-  nftIds?: Array<number>
-  internal?: object
+  collectionUuid: string
+  quantity: number
 }
 
 export interface PaymentCheckoutv2 {
@@ -32,4 +18,5 @@ export interface PaymentCheckoutv2 {
   smsCode: number
   successUrl: string
   cancelUrl: string
+  userId: string
 }

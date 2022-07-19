@@ -1,8 +1,8 @@
 import DbHelper from 'src/api/db-helper'
 import Twilio from 'twilio'
 import crypto from 'crypto'
-import User from "src/api/model/user";
-import Token from "src/api/model/token";
+import User from 'src/api/model/user'
+import Token from 'src/api/model/token'
 
 const accountId = process.env.TWILIO_ACCOUNT_ID
 const authToken = process.env.TWILIO_AUTH_TOKEN

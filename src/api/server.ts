@@ -9,6 +9,7 @@ import payment from './payment'
 import sms from './smsgateway'
 import token from './token'
 import collection from './collection'
+import mint from './minter'
 
 import bodyParser from 'body-parser'
 const l = logger(module)
@@ -52,6 +53,7 @@ export const RESTServer = async () => {
 
   const close = () => server.close()
 
+  mint(minterRouter)
   payment(paymentRouter)
   sms(smsRouter)
   token(tokensRouter)

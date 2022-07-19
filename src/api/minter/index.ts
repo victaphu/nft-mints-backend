@@ -18,9 +18,10 @@ const doMint = async (req: Request, res: Response) => {
     // Refactor: "owner" will likely come from session after authentication is in place
     conn = await new DbHelper().connect()
     const owner = await conn.getUserByUUID(req.body.owner)
-    const token = await conn.getToken({_id: req.body.token})
-
-    await mint(owner, token)
+    // Note: changed from token to collection (todo: update accordingly)
+    const collection = await conn.getCollectionByUUID(req.body.token)
+    // Todo: handle null case
+    await mint(owner, collection!)
   } catch (e) {
     res.status(500).json(e)
   } finally {
@@ -61,13 +62,7 @@ const init = (app: Router) => {
   app.get('/chain-mint/:owner/:token', doMint)
   app.post('/claim/init', initClaim)
   app.post('/claim/final/:token', finalizeClaim)
-  app.post('/hook', express.raw({type: 'application/json'}))
-  app.post(
-    '/paymentIntent',
-    body('tokenId').isInt({gt: 0}),
-    body('tokenAddress').isHexadecimal(),
-    body('mobileNumber').isMobilePhone('any')
-  )
+
   app.get('/', (req, res) => {
     console.log('GET')
     res.json({message: 'Success'})

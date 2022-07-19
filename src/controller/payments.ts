@@ -1,9 +1,8 @@
 import {Request} from 'express'
-import DbHelper from 'src/api/db-helper'
-import Wallet from 'src/api/wallet'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
 import {SMSController, TokenController} from '.'
+import fetch from 'node-fetch'
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
@@ -60,6 +59,7 @@ export async function checkoutv2({
   smsCode,
   successUrl,
   cancelUrl,
+  userId,
 }: PaymentCheckoutv2) {
   const isValid = await SMSController.verifySMSCode(mobileNumber, smsCode.toString())
 
@@ -71,10 +71,11 @@ export async function checkoutv2({
 
   await Promise.all(
     nfts.map(async (nft: NFTInterface) => {
-      const internal = await TokenController.fetchTokenByAddress(nft.nftAddress)
-      const tokens = internal?.tokens
-        .filter((t: any) => nft.nftIds!.indexOf(t.tokenId) >= 0)
-        .map((t: any) => lineItems.push({price: t.stripePriceId, quantity: 1}))
+      const internal = await TokenController.getCollectionByUUID(nft.collectionUuid)
+      lineItems.push({price: internal?.priceId, quantity: nft.quantity})
+      // const tokens = internal?.tokens
+      //   .filter((t: any) => nft.nftIds!.indexOf(t.tokenId) >= 0)
+      //   .map((t: any) => lineItems.push({price: t.stripePriceId, quantity: 1}))
     })
   )
 
@@ -86,7 +87,9 @@ export async function checkoutv2({
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: {
+      // note 500 character limit ...
       nfts: JSON.stringify(nfts),
+      userId,
       mobileNumber,
       smsCode,
     },
@@ -101,7 +104,7 @@ export async function handleStripeHook(request: Request) {
   // Handle the event
   // console.log(event.type, event.data.object)
   const paymentIntent: any = event.data.object
-
+  const nfts = (paymentIntent.metadata.nfts && JSON.parse(paymentIntent.metadata.nfts)) || []
   switch (event.type) {
     case 'payment_intent.succeeded':
       console.log('Received payment intent success', paymentIntent, paymentIntent.metadata)
@@ -113,19 +116,17 @@ export async function handleStripeHook(request: Request) {
         paymentIntent,
         paymentIntent.metadata
       )
+      // await TokenController.mintToken(
+      //   paymentIntent.metadata.mobileNumber,
+      //   paymentIntent.metadata.smsCode,
+      //   ''
+      // )
 
-      await TokenController.mintToken(
-        paymentIntent.metadata.mobileNumber,
-        paymentIntent.metadata.smsCode,
-        ''
+      // on success call the chain-mint api
+      // TODO: figure out how to secure this api, only the payment controller should have access to this
+      await fetch(
+        `${process.env.SERVER_ENDPOINT_API}/v0/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
       )
-
-      // send SMS!
-      await SMSController.sendSMS(
-        paymentIntent.metadata.mobileNumber,
-        'Congratulations your purchase of <NFT Token> was successful!'
-      )
-      // Then define and call a function to handle the event payment_intent.succeeded
 
       break
     default:

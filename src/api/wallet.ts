@@ -5,6 +5,7 @@ import {abi} from './abi/MinterNFTV0'
 import User from './model/user'
 import Token from './model/token'
 import DbHelper from './db-helper'
+import Collection from './model/collection'
 
 export default class Wallet {
   private static PRIVATE_KEY_DEFAULT = process.env.PRIVATE_KEY || ''
@@ -36,14 +37,17 @@ export default class Wallet {
       .safeTransferFrom(this.wallet.getAddress(), destination, token.sequence)
   }
 
-  async mint(owner: User, token: Token) {
+  async mint(owner: User, collection: Collection) {
     let conn
     try {
       const db = new DbHelper()
       conn = await db.connect()
+      const collectionDb = await conn.getCollectionByUUID(collection.uuid!)
+      // Todo: handle null case for collection
+      const token = new Token(collectionDb!.collectionAddress, BigInt(0), owner.uuid, false)
 
       token.addMintIdStamp()
-      await conn.updateToken(token)
+      await conn.createToken(token)
 
       const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
       const tx = await contract

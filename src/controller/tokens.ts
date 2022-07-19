@@ -24,30 +24,31 @@ export async function createToken(contractAddress: string, sequence: bigint, own
   return token
 }
 
-export async function mintToken(
-  destination: string,
-  verificationCode: string,
-  collectionUuid: string
-) {
-  const wallet = new Wallet(process.env.RPC, process.env.PRIVATE_KEY)
-  const db = new DbHelper()
-  const conn = await db.connect()
-  const token = await db.getToken(collectionUuid)
-  await conn.close()
+// export async function mintToken(
+//   destination: string,
+//   verificationCode: string,
+//   collectionUuid: string
+// ) {
+//   const wallet = new Wallet(process.env.RPC, process.env.PRIVATE_KEY)
+//   const db = new DbHelper()
+//   const conn = await db.connect()
+//   const token = await db.getToken(collectionUuid)
+//   await conn.close()
 
-  if (!token) {
-    throw new Error('Token not found, cannot mint')
-  }
+//   if (!token) {
+//     throw new Error('Token not found, cannot mint')
+//   }
 
-  await wallet.transferToken(token, destination, verificationCode)
-}
+//   await wallet.transferToken(token, destination, verificationCode)
+// }
 
 export async function createCollection(
   title: string | 'Anonymous Collection',
   description: string | '',
   link: string | '',
   rate: number | 0,
-  maxMint: number | 1
+  maxMint: number | 1,
+  userId: string
 ) {
   console.log(arguments)
   const c = new Collection(
@@ -57,6 +58,8 @@ export async function createCollection(
     rate || 0,
     maxMint || 1
   )
+  // Refactor: "owner" will likely come from session after authentication is in place
+  c.userUuid = userId
 
   const product = await StripeController.registerProduct(
     title || 'Anonymous Collection',
