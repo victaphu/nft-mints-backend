@@ -2,7 +2,7 @@ import web3 from 'web3'
 
 export default class Token {
   public id: string | undefined
-  public contractAddress: string = '0xdabc3A9a7e8d6448eD7846195f93278CE3A9c61B' // All tokens use same contract for MVP
+  public contractAddress: string = '0x7f273afb22d33432e341de43484f9c7dac28bb5e' // All tokens use same contract for MVP
   public sequence: bigint
   public ownerUUID: string
   public isClaimed: boolean
