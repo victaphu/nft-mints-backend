@@ -2,7 +2,6 @@ export interface PaymentCheckout {
   tokenId: string
   tokenAddress: string
   mobileNumber: string
-  smsCode: number
   successUrl: string
   cancelUrl: string
 }

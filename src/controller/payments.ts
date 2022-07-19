@@ -36,7 +36,6 @@ export async function checkout({
   tokenId,
   tokenAddress,
   mobileNumber,
-  smsCode,
   successUrl,
   cancelUrl,
 }: PaymentCheckout) {
@@ -48,7 +47,6 @@ export async function checkout({
     tokenId,
     tokenAddress,
     mobileNumber,
-    smsCode,
     successUrl,
     cancelUrl
   )
@@ -76,17 +74,10 @@ export async function checkout({
 export async function checkoutv2({
   nfts,
   mobileNumber,
-  smsCode,
   successUrl,
   cancelUrl,
   userId,
 }: PaymentCheckoutv2) {
-  const isValid = await SMSController.verifySMSCode(mobileNumber, smsCode.toString())
-
-  if (!isValid) {
-    throw new Error('Failed to verify SMS Code')
-  }
-
   const lineItems: any[] = []
 
   await Promise.all(
@@ -111,7 +102,7 @@ export async function checkoutv2({
       nfts: JSON.stringify(nfts),
       userId,
       mobileNumber,
-      smsCode,
+      smsCode: 1234,
     },
   })
   return session

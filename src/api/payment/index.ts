@@ -12,7 +12,7 @@ const l = logger(module)
 
 const checkout = async (request: Request, response: Response) => {
   // note: checkout should also include the requested smsCode
-  const {tokenId, tokenAddress, mobileNumber, smsCode, successUrl, cancelUrl} = request.body
+  const {tokenId, tokenAddress, mobileNumber, successUrl, cancelUrl} = request.body
   console.log(request.body)
   const errors = validationResult(request)
 
@@ -22,18 +22,11 @@ const checkout = async (request: Request, response: Response) => {
     return
   }
 
-  if (smsCode !== '12345') {
-    l.error('SMS Code failed')
-    response.status(400).send({status: 'failed', message: 'invalid sms code'})
-    return
-  }
-
   try {
     const session = await PaymentController.checkout({
       tokenId,
       tokenAddress,
       mobileNumber,
-      smsCode,
       successUrl,
       cancelUrl,
     })
@@ -103,7 +96,6 @@ const init = (app: Router) => {
     body('tokenId').isInt({gt: 0}),
     body('tokenAddress').isHexadecimal(),
     body('mobileNumber').isLength({min: 5}),
-    body('smsCode').isNumeric().isLength({min: 5, max: 5}),
     // body('mobileNumber').isMobilePhone('any'), // get this working
     body('successUrl').isURL({require_tld: false}),
     body('cancelUrl').isURL({require_tld: false}),
