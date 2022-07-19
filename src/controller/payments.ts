@@ -143,11 +143,10 @@ export async function handleStripeHook(request: Request) {
       // )
 
       // on success call the chain-mint api
-      // TODO: figure out how to secure this api, only the payment controller should have access to this
-      // await fetch(
-      //   `${process.env.SERVER_ENDPOINT_API}/v0/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
-      // )
-      doMint(paymentIntent.metadata.userId, nfts[0].collectionUuid)
+      await fetch(
+        `${process.env.SERVER_ENDPOINT_API}/v0/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
+      )
+      // doMint(paymentIntent.metadata.userId, nfts[0].collectionUuid)
 
       break
     default:
