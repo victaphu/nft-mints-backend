@@ -22,7 +22,7 @@ const doMint = async (req: Request, res: Response) => {
     const collection = await conn.getCollectionByUUID(req.params.collection)
     // Todo: handle null case
     await mint(owner, collection!)
-    return res.status(200)
+    res.status(200).send()
   } catch (e) {
     console.error(e)
     res.status(500).json(e)
@@ -37,7 +37,7 @@ const initClaim = async (req: Request, res: Response) => {
     conn = await new DbHelper().connect()
     const owner = await conn.getUserByUUID(req.params.owner)
     await initializeClaimCtl(owner)
-    res.status(200)
+    res.status(200).send()
   } catch (e) {
     res.status(500).json(e)
   } finally {
@@ -54,7 +54,7 @@ const finalizeClaim = async (req: Request, res: Response) => {
     const token = await conn.getToken({contractAddress: contract, sequence: sequence})
 
     await finalizeClaimCtl(owner, token, req.body.destination, req.body.smsCode)
-    res.status(200)
+    res.status(200).send()
   } catch (e) {
     console.error(e)
     res.status(500).json(e)

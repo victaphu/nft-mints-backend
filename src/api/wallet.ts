@@ -31,13 +31,21 @@ export default class Wallet {
 
     if (!owner || !owner.verify(verificationCode)) throw new Error('Invalid verification code')
 
-    const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
-    const tx = await contract
-      .connect(this.wallet)
-      .safeTransferFrom(this.wallet.getAddress(), destination, token.sequence)
-    return await tx.wait()
+    // TODO: Add safeTransferFrom to smart contract
+    return new ethers.Contract(token.contractAddress, abi, this.provider)
+      .connect(this.wallet)['safeTransferFrom(address,address,uint256)'](
+        this.wallet.getAddress(),
+        destination,
+        token.sequence
+      )
   }
 
+  async lookupOwnerForNFT(token: Token) {
+    const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
+    return contract.callStatic.ownerOf(token.sequence)
+  }
+
+  // TODO: Can remove, used for testing only
   async mintIdToTokenId(address: string, mintId: BigNumber | string) {
     const contract = new ethers.Contract(address, abi, this.provider)
 
