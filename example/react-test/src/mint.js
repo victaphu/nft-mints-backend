@@ -12,8 +12,6 @@ function Mint() {
   const [rate, setRate] = useState(10)
   const [supply, setSupply] = useState(100)
   const [userId] = useState('') // hard coded user id for now
-
-  const [mintedUuid, setMintedUuid] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   async function submitData() {

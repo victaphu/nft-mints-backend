@@ -5,8 +5,8 @@ import {body, oneOf, validationResult} from 'express-validator'
 
 import {logger} from 'src/logger'
 import {TokenController} from 'src/controller'
-import Wallet from "src/api/wallet";
-import DbHelper from "src/api/db-helper";
+import Wallet from 'src/api/wallet'
+import DbHelper from 'src/api/db-helper'
 
 const l = logger(module)
 
