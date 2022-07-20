@@ -14,8 +14,12 @@ export async function fetchTokens() {
   return dataObj
 }
 
-export async function createToken(contractAddress: string, sequence: bigint, ownerUUID: string) {
-  const token = new Token(contractAddress, sequence, ownerUUID, false)
+export async function createToken(
+  contractAddress: string,
+  sequence: bigint | null,
+  ownerUUID: string
+) {
+  const token = new Token(contractAddress, ownerUUID, false, sequence)
   const db = new DbHelper()
   const conn = await db.connect()
   await db.createToken(token)
@@ -24,31 +28,36 @@ export async function createToken(contractAddress: string, sequence: bigint, own
   return token
 }
 
-export async function mintToken(
-  destination: string,
-  verificationCode: string,
-  collectionUuid: string
-) {
-  const wallet = new Wallet(process.env.RPC, process.env.PRIVATE_KEY)
-  const db = new DbHelper()
-  const conn = await db.connect()
-  const token = await db.getToken(collectionUuid)
-  await conn.close()
+// export async function mintToken(
+//   destination: string,
+//   verificationCode: string,
+//   collectionUuid: string
+// ) {
+//   const wallet = new Wallet(process.env.RPC, process.env.PRIVATE_KEY)
+//   const db = new DbHelper()
+//   const conn = await db.connect()
+//   const token = await db.getToken(collectionUuid)
+//   await conn.close()
 
-  if (!token) {
-    throw new Error('Token not found, cannot mint')
-  }
+//   if (!token) {
+//     throw new Error('Token not found, cannot mint')
+//   }
 
-  await wallet.transferToken(token, destination, verificationCode)
-}
+//   await wallet.transferToken(token, destination, verificationCode)
+// }
 
 export async function createCollection(
   title: string | 'Anonymous Collection',
   description: string | '',
   link: string | '',
   rate: number | 0,
-  maxMint: number | 1
+  maxMint: number | 1,
+  userId: string,
+  collectionImage: string | ''
 ) {
+  if (+rate < 5) {
+    throw new Error('Rate must be greater than $5')
+  }
   console.log(arguments)
   const c = new Collection(
     title || 'Anonymous Collection',
@@ -57,13 +66,18 @@ export async function createCollection(
     rate || 0,
     maxMint || 1
   )
+  // Refactor: "owner" will likely come from session after authentication is in place
+  c.userUuid = userId
+  c.collectionImage = collectionImage
+
+  const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
 
   const product = await StripeController.registerProduct(
     title || 'Anonymous Collection',
     description || 'Anonymous Collection',
-    rate,
+    tokenPrice,
     c.addUUIDStamp(),
-    link
+    collectionImage
   )
 
   c.productId = product.id
@@ -84,4 +98,25 @@ export async function getCollectionByUUID(uuid: string) {
 
   const con = await db.connect()
   return await con.getCollectionByUUID(uuid)
+}
+
+export async function getCollectionById(id: string) {
+  const db = new DbHelper()
+  const con = await db.connect()
+  return await con.getCollectionsByFilter({_id: id})
+}
+
+export async function getCollectionByUser(userUuid: string) {
+  console.log('Get collection', userUuid)
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  return await con.getCollectionsByFilter({userUuid})
+}
+
+export async function getCollections() {
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  return await con.getCollectionsByFilter({})
 }

@@ -77,37 +77,63 @@ export default class DbHelper {
     return User.fromDatabase(result)
   }
 
-  async getUserByUUID(uuid: string) {
+  async getUserByUUID(uuid: string): Promise<User> {
     const collection = 'users'
     const result = await this.db?.collection(collection).findOne({uuid: uuid})
-    if (!result) return null
+    if (!result) {
+      throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
+    }
     return User.fromDatabase(result)
   }
 
-  async getToken(filter: any): Promise<Token | null> {
+  async getToken(filter: any): Promise<Token> {
     const collection = 'tokens'
     const result = await this.db?.collection(collection).findOne(filter)
-    if (!result) return null
+    if (!result) {
+      throw new DbError(DbError.Type.UNINITIALIZED, `Specified token filter found no match`)
+    }
     return Token.fromDatabase(result)
   }
 
   async createToken(token: Token) {
     const collection = 'tokens'
-    const existingToken = await this.getToken({
-      contractAddress: token.contractAddress,
-      id: token.id,
-    })
+    let existingToken
+    try {
+      existingToken = await this.getToken({
+        contractAddress: token.contractAddress,
+        _id: token.id,
+      })
+    } catch (e) {
+      if (e.code !== DbError.Type.UNINITIALIZED) {
+        throw e
+      }
+    }
     if (existingToken) {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'token already exists')
     }
-    const objToAdd = {...token, dateCreated: new Date().toISOString()}
+    const objToAdd = {
+      ...token,
+      dateCreated: new Date().toISOString(),
+      sequence: token.sequence ? token.sequence.toString() : null,
+    }
     return this.db?.collection(collection).insertOne(objToAdd)
+  }
+
+  async updateToken(token: Token) {
+    const collection = 'tokens'
+    return this.db
+      ?.collection(collection)
+      .findOneAndUpdate(
+        {uuid: token.uuid},
+        {$set: {...token, sequence: token.sequence?.toString() || null}},
+        {upsert: true}
+      )
   }
 
   async createSmsTokenFor(phone: string, pendingCode: string, codeHash: string) {
     let user = await this.getUserByPhone(phone)
     if (!user) {
-      user = new User(User.generateUUID(), User.generateUUID(), phone)
+      user = new User(User.generateUUID(), phone)
       await this.createUser(user)
     }
     // user last sent code was less than 60 seconds ago ... reject
@@ -126,9 +152,7 @@ export default class DbHelper {
 
   async createCollection(collection: Collection) {
     const mongoCollection = 'collections'
-    const existingToken = await this.getToken({
-      id: collection.id,
-    })
+    const existingToken = await this.getCollectionByUUID(collection.uuid!)
     if (existingToken) {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'collection already exists')
     }
@@ -137,6 +161,20 @@ export default class DbHelper {
     }
     const objToAdd = {...collection, dateCreated: new Date().toISOString()}
     return this.db?.collection(mongoCollection).insertOne(objToAdd)
+  }
+
+  async getCollectionsByFilter(filter: any) {
+    const mongoCollection = 'collections'
+    const result = await this.db?.collection(mongoCollection).find(filter) // TODO: limit returned reuslts
+    if (!result) return null
+
+    const collections: Collection[] = []
+    const resultArray = await result.toArray()
+
+    resultArray.forEach((r) => {
+      collections.push(Collection.fromDatabase(r))
+    })
+    return collections
   }
 
   async getCollectionByUUID(uuid: string) {

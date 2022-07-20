@@ -1,9 +1,13 @@
 import {Request} from 'express'
-import DbHelper from 'src/api/db-helper'
-import Wallet from 'src/api/wallet'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
 import {SMSController, TokenController} from '.'
+// import fetch, {RequestInfo, RequestInit} from 'node-fetch'
+import axios from 'axios'
+import DbHelper from 'src/api/db-helper'
+import mint from './mint'
+// const fetch = (url: RequestInfo, init?: RequestInit) =>
+// import('node-fetch').then(({default: fetch}) => fetch(url, init))
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
@@ -13,26 +17,33 @@ const stripe = new Stripe(stripeAPIKey!, {
   typescript: true,
 })
 
+// Refactor: move to fetch of api instead of this workaround; having issues with fetch complaining about ES Module
+async function doMint(userUuid: string, token: string) {
+  let conn
+  try {
+    // Refactor: "owner" will likely come from session after authentication is in place
+    conn = await new DbHelper().connect()
+    const owner = await conn.getUserByUUID(userUuid)
+    // Note: changed from token to collection (todo: update accordingly)
+    const collection = await conn.getCollectionByUUID(token)
+    // Todo: handle null case
+    await mint(owner, collection!)
+  } finally {
+    conn?.close()
+  }
+}
+
 export async function checkout({
   tokenId,
   tokenAddress,
   mobileNumber,
-  smsCode,
   successUrl,
   cancelUrl,
 }: PaymentCheckout) {
   // lookup token address + token id to find the product id in the database
   const productId = 'price_1LHqjcKXnj3LtQdKjTlqHBYx'
 
-  console.log(
-    'checkout received',
-    tokenId,
-    tokenAddress,
-    mobileNumber,
-    smsCode,
-    successUrl,
-    cancelUrl
-  )
+  console.log('checkout received', tokenId, tokenAddress, mobileNumber, successUrl, cancelUrl)
 
   const session = await stripe.checkout.sessions.create({
     line_items: [
@@ -57,24 +68,19 @@ export async function checkout({
 export async function checkoutv2({
   nfts,
   mobileNumber,
-  smsCode,
   successUrl,
   cancelUrl,
+  userId,
 }: PaymentCheckoutv2) {
-  const isValid = await SMSController.verifySMSCode(mobileNumber, smsCode.toString())
-
-  if (!isValid) {
-    throw new Error('Failed to verify SMS Code')
-  }
-
   const lineItems: any[] = []
 
   await Promise.all(
     nfts.map(async (nft: NFTInterface) => {
-      const internal = await TokenController.fetchTokenByAddress(nft.nftAddress)
-      const tokens = internal?.tokens
-        .filter((t: any) => nft.nftIds!.indexOf(t.tokenId) >= 0)
-        .map((t: any) => lineItems.push({price: t.stripePriceId, quantity: 1}))
+      const internal = await TokenController.getCollectionByUUID(nft.collectionUuid)
+      lineItems.push({price: internal?.priceId, quantity: nft.quantity})
+      // const tokens = internal?.tokens
+      //   .filter((t: any) => nft.nftIds!.indexOf(t.tokenId) >= 0)
+      //   .map((t: any) => lineItems.push({price: t.stripePriceId, quantity: 1}))
     })
   )
 
@@ -86,9 +92,11 @@ export async function checkoutv2({
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: {
+      // note 500 character limit ...
       nfts: JSON.stringify(nfts),
+      userId,
       mobileNumber,
-      smsCode,
+      smsCode: 1234,
     },
   })
   return session
@@ -101,7 +109,7 @@ export async function handleStripeHook(request: Request) {
   // Handle the event
   // console.log(event.type, event.data.object)
   const paymentIntent: any = event.data.object
-
+  const nfts = (paymentIntent.metadata.nfts && JSON.parse(paymentIntent.metadata.nfts)) || []
   switch (event.type) {
     case 'payment_intent.succeeded':
       console.log('Received payment intent success', paymentIntent, paymentIntent.metadata)
@@ -113,19 +121,19 @@ export async function handleStripeHook(request: Request) {
         paymentIntent,
         paymentIntent.metadata
       )
+      // await TokenController.mintToken(
+      //   paymentIntent.metadata.mobileNumber,
+      //   paymentIntent.metadata.smsCode,
+      //   ''
+      // )
 
-      await TokenController.mintToken(
-        paymentIntent.metadata.mobileNumber,
-        paymentIntent.metadata.smsCode,
-        ''
+      // on success call the chain-mint api
+      console.log(
+        axios.get(
+          `${process.env.SERVER_ENDPOINT_API}/v0/minter/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
+        )
       )
-
-      // send SMS!
-      await SMSController.sendSMS(
-        paymentIntent.metadata.mobileNumber,
-        'Congratulations your purchase of <NFT Token> was successful!'
-      )
-      // Then define and call a function to handle the event payment_intent.succeeded
+      // doMint(paymentIntent.metadata.userId, nfts[0].collectionUuid)
 
       break
     default:

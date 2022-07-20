@@ -8,9 +8,11 @@ export default class Collection {
   public rate: number
   public maxMint: number
   public uuid: string | undefined
+  public collectionAddress: string = '0x7f273afb22d33432e341de43484f9c7dac28bb5e'
   public userUuid: string | undefined // todo: i think a collection needs an owner; can we make User the owner of a collection?
   public productId: string | undefined // stripe product id
   public priceId: string | undefined // strip price id
+  public collectionImage: string | undefined
 
   constructor(
     _title: string,
@@ -48,6 +50,9 @@ export default class Collection {
     t.priceId = result.priceId
     t.userUuid = result.userUuid
     t.productId = result.productId
+    t.collectionImage =
+      result.collectionImage ||
+      'https://ipfs.io/ipfs/QmNf1UsmdGaMbpatQ6toXSkzDpizaGmC9zfunCyoz1enD5/penguin/1.png'
     return t
   }
 }

@@ -8,8 +8,7 @@ export default class User {
   public codeHash = ''
   public lastSentCode: number = 0
 
-  constructor(id: string, uuid: string, phone: string) {
-    this.id = id
+  constructor(uuid: string, phone: string) {
     this.uuid = uuid || User.generateUUID()
     this.phone = phone
   }
@@ -26,7 +25,8 @@ export default class User {
   }
 
   static fromDatabase(result: any) {
-    const u = new User(result.id, result.uuid, result.phone)
+    const u = new User(result.uuid, result.phone)
+    u.id = result.id
     u.pendingCode = result.pendingCode
     u.codeHash = result.codeHash
     return u

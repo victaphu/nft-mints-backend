@@ -1,6 +1,8 @@
 import DbHelper from 'src/api/db-helper'
 import Twilio from 'twilio'
 import crypto from 'crypto'
+import User from 'src/api/model/user'
+import Token from 'src/api/model/token'
 
 const accountId = process.env.TWILIO_ACCOUNT_ID
 const authToken = process.env.TWILIO_AUTH_TOKEN
@@ -40,6 +42,13 @@ export async function verifySMSCode(destination: string, code: string) {
   const user = await conn.getUserByPhone(destination)
   await conn.close()
   return user?.verify(code)
+}
+
+export async function sendPostMintMessage(owner: User, token: Token) {
+  sendSMS(
+    owner.phone,
+    `Congratulations! Your NFT is ready! Go ahead, take a look. ${process.env.FRONTEND_URI}/view/${token.contractAddress}/${token.sequence}`
+  )
 }
 
 // add sms code verification logic here
