@@ -14,8 +14,12 @@ export async function fetchTokens() {
   return dataObj
 }
 
-export async function createToken(contractAddress: string, sequence: bigint, ownerUUID: string) {
-  const token = new Token(contractAddress, sequence, ownerUUID, false)
+export async function createToken(
+  contractAddress: string,
+  sequence: bigint | null,
+  ownerUUID: string
+) {
+  const token = new Token(contractAddress, ownerUUID, false, sequence)
   const db = new DbHelper()
   const conn = await db.connect()
   await db.createToken(token)

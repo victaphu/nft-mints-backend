@@ -61,7 +61,7 @@ export default class Wallet {
       conn = await db.connect()
       const collectionDb = await conn.getCollectionByUUID(collection.uuid!)
       // Todo: handle null case for collection
-      const token = new Token(collectionDb!.collectionAddress, BigInt(0), owner.uuid, false)
+      const token = new Token(collectionDb!.collectionAddress, owner.uuid, false)
 
       token.addMintIdStamp()
       await conn.createToken(token)

@@ -101,7 +101,7 @@ export default class DbHelper {
     try {
       existingToken = await this.getToken({
         contractAddress: token.contractAddress,
-        id: token.id,
+        _id: token.id,
       })
     } catch (e) {
       if (e.code !== DbError.Type.UNINITIALIZED) {
@@ -114,7 +114,7 @@ export default class DbHelper {
     const objToAdd = {
       ...token,
       dateCreated: new Date().toISOString(),
-      sequence: token.sequence.toString(),
+      sequence: token.sequence ? token.sequence.toString() : null,
     }
     return this.db?.collection(collection).insertOne(objToAdd)
   }
@@ -124,8 +124,8 @@ export default class DbHelper {
     return this.db
       ?.collection(collection)
       .findOneAndUpdate(
-        {id: token.id},
-        {$set: {...token, sequence: token.sequence.toString()}},
+        {uuid: token.uuid},
+        {$set: {...token, sequence: token.sequence?.toString() || null}},
         {upsert: true}
       )
   }
