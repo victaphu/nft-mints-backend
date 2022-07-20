@@ -1,7 +1,6 @@
 import './App.css'
 import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom'
 import Marketplace from './marketplace'
-import Buy from './buy'
 import Mint from './mint'
 
 function App() {
@@ -23,7 +22,7 @@ function App() {
         </nav>
         <Routes>
           <Route path="/" element={<Marketplace />}></Route>
-          <Route path="/purchase/:collectionUuid" element={<Buy />}></Route>
+          <Route path="/purchase/:collectionUuid" element={<Marketplace />}></Route>
           <Route path="/create" element={<Mint />}></Route>
         </Routes>
       </div>

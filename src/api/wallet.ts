@@ -35,8 +35,7 @@ export default class Wallet {
     const tx = await contract
       .connect(this.wallet)
       .safeTransferFrom(this.wallet.getAddress(), destination, token.sequence)
-    await tx.wait()
-    return
+    return await tx.wait()
   }
 
   async mintIdToTokenId(address: string, mintId: BigNumber | string) {

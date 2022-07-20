@@ -1,6 +1,7 @@
 import './App.css'
 import {useEffect, useState} from 'react'
 import axios from 'axios'
+import {useParams} from 'react-router'
 
 const GATEWAY = 'http://localhost:3000'
 const REDIRECT_URL_SUCCESS = 'http://localhost:3001/'
@@ -14,18 +15,31 @@ function Marketplace() {
   const [smsSent, setSmsSent] = useState(true)
   const [mobileNumber, setMobileNumber] = useState('+6584901105')
   const [smsCode, setSmsCode] = useState('05270')
+  const [buying, setBuying] = useState(false)
+
+  const params = useParams()
 
   // get list of nfts
   useEffect(() => {
     console.log('Fetching data')
-    axios
-      .get(`${GATEWAY}/v0/collections/all`)
-      .then((response) => {
-        console.log(response)
-        setNfts(response.data)
-      })
-      .catch((e) => console.error(e))
-  }, [filters, page])
+    if (params.collectionUuid) {
+      axios
+        .get(`${GATEWAY}/v0/collections/${params.collectionUuid}`)
+        .then((response) => {
+          console.log(response)
+          setNfts([response.data])
+        })
+        .catch((e) => console.error(e))
+    } else {
+      axios
+        .get(`${GATEWAY}/v0/collections/all`)
+        .then((response) => {
+          console.log(response)
+          setNfts(response.data)
+        })
+        .catch((e) => console.error(e))
+    }
+  }, [filters, page, params.collectionUuid])
 
   // let user select nft to purchase
   async function purchaseNfts() {
@@ -51,6 +65,8 @@ function Marketplace() {
       },
       body: JSON.stringify(body),
     })
+
+    setBuying(false)
 
     window.location.href = (await res.json()).url
   }
@@ -108,6 +124,9 @@ function Marketplace() {
   function renderTokenDetails(token) {
     return (
       <div style={{columnCount: 1, margin: '5px'}}>
+        <div style={{fontSize: '10px'}}>
+          <a href={`/purchase/${token.uuid}`}>{token.uuid}</a>
+        </div>
         <div>Title: {token.title}</div>
         <div>Price:</div>
         <div>USD ${token.rate}</div>
@@ -202,9 +221,13 @@ function Marketplace() {
             selectedNfts.length === 0 ||
             !smsSent ||
             smsCode.length === 0 ||
-            mobileNumber.length === 0
+            mobileNumber.length === 0 ||
+            buying
           }
-          onClick={purchaseNfts}
+          onClick={(e) => {
+            purchaseNfts()
+            setBuying(true)
+          }}
         >
           Purchase NFTs
         </button>

@@ -123,7 +123,11 @@ export default class DbHelper {
     const collection = 'tokens'
     return this.db
       ?.collection(collection)
-      .findOneAndUpdate({id: token.id}, {$set: {...token, sequence: token.sequence.toString()}}, {upsert: true})
+      .findOneAndUpdate(
+        {id: token.id},
+        {$set: {...token, sequence: token.sequence.toString()}},
+        {upsert: true}
+      )
   }
 
   async createSmsTokenFor(phone: string, pendingCode: string, codeHash: string) {

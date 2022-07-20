@@ -2,7 +2,7 @@ import {Request, Response, Router} from 'express'
 import DbHelper from 'src/api/db-helper'
 import {TokenController} from 'src/controller'
 import {body} from 'express-validator'
-import User from "src/api/model/user";
+import User from 'src/api/model/user'
 
 // TODO: Safely close connection
 const db = new DbHelper()
@@ -24,11 +24,7 @@ const getUser = async (req: Request, res: Response) => {
 }
 
 const init = (app: Router) => {
-  app.post(
-    '/',
-    body('phone').isString().isLength({min: 10}),
-    createUser
-  )
+  app.post('/', body('phone').isString().isLength({min: 10}), createUser)
   app.get('/:uuid', getUser)
 }
 

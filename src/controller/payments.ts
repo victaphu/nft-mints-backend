@@ -2,12 +2,12 @@ import {Request} from 'express'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
 import {SMSController, TokenController} from '.'
-//import fetch, {RequestInfo, RequestInit} from 'node-fetch'
+// import fetch, {RequestInfo, RequestInit} from 'node-fetch'
 import axios from 'axios'
 import DbHelper from 'src/api/db-helper'
 import mint from './mint'
 // const fetch = (url: RequestInfo, init?: RequestInit) =>
-//   import('node-fetch').then(({default: fetch}) => fetch(url, init))
+// import('node-fetch').then(({default: fetch}) => fetch(url, init))
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
@@ -43,14 +43,7 @@ export async function checkout({
   // lookup token address + token id to find the product id in the database
   const productId = 'price_1LHqjcKXnj3LtQdKjTlqHBYx'
 
-  console.log(
-    'checkout received',
-    tokenId,
-    tokenAddress,
-    mobileNumber,
-    successUrl,
-    cancelUrl
-  )
+  console.log('checkout received', tokenId, tokenAddress, mobileNumber, successUrl, cancelUrl)
 
   const session = await stripe.checkout.sessions.create({
     line_items: [
@@ -135,8 +128,10 @@ export async function handleStripeHook(request: Request) {
       // )
 
       // on success call the chain-mint api
-      await axios.get(
-        `${process.env.SERVER_ENDPOINT_API}/v0/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
+      console.log(
+        axios.get(
+          `${process.env.SERVER_ENDPOINT_API}/v0/minter/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
+        )
       )
       // doMint(paymentIntent.metadata.userId, nfts[0].collectionUuid)
 

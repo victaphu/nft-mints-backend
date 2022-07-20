@@ -34,6 +34,5 @@ export async function finalizeClaim(
   // Note: transfer token does its own verification code check.
   // Should have in only one place or the other. Likely better here in the controller.
   const w = new Wallet()
-  const tx = await w.transferToken(token, destinationWallet, smsCode)
-  return tx.wait()
+  return await w.transferToken(token, destinationWallet, smsCode)
 }

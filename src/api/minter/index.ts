@@ -1,5 +1,4 @@
 import {Request, Response, Router} from 'express'
-
 import express from 'express'
 import {body, validationResult} from 'express-validator'
 import {logger} from 'src/logger'
@@ -9,13 +8,14 @@ import {
   finalizeClaim as finalizeClaimCtl,
   initializeClaim as initializeClaimCtl,
 } from 'src/controller/mint'
-import Wallet from "src/api/wallet";
+import Wallet from 'src/api/wallet'
 
 const l = logger(module)
 
 const doMint = async (req: Request, res: Response) => {
   let conn
   try {
+    console.log('Doing minting now')
     // Refactor: "owner" will likely come from session after authentication is in place
     conn = await new DbHelper().connect()
     const owner = await conn.getUserByUUID(req.params.owner)
@@ -63,7 +63,7 @@ const finalizeClaim = async (req: Request, res: Response) => {
   }
 }
 
-const getSequenceIdFromMintID = async function (req: Request, res: Response) {
+const getSequenceIdFromMintID = async (req: Request, res: Response) => {
   const mintId = req.params.id
   const contract = req.params.contract
   const wallet = new Wallet()
