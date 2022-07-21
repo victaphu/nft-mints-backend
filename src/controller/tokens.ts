@@ -20,7 +20,7 @@ export async function createCollection(
   link: string | '',
   rate: number | 0,
   maxMint: number | 1,
-  userId: string,
+  ownerUUID: string,
   collectionImage: string | ''
 ) {
   if (+rate < 5) {
@@ -28,14 +28,13 @@ export async function createCollection(
   }
   console.log(arguments)
   const c = new Collection(
+    ownerUUID,
     title || 'Anonymous Collection',
     description || '',
     link || '',
     rate || 0,
     maxMint || 1
   )
-  // Refactor: "owner" will likely come from session after authentication is in place
-  c.userUuid = userId
   c.collectionImage = collectionImage
 
   const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
