@@ -14,38 +14,6 @@ export async function fetchTokens() {
   return dataObj
 }
 
-export async function createToken(
-  contractAddress: string,
-  sequence: bigint | null,
-  ownerUUID: string
-) {
-  const token = new Token(contractAddress, ownerUUID, false, sequence)
-  const db = new DbHelper()
-  const conn = await db.connect()
-  await db.createToken(token)
-  await conn.close()
-
-  return token
-}
-
-// export async function mintToken(
-//   destination: string,
-//   verificationCode: string,
-//   collectionUuid: string
-// ) {
-//   const wallet = new Wallet(process.env.RPC, process.env.PRIVATE_KEY)
-//   const db = new DbHelper()
-//   const conn = await db.connect()
-//   const token = await db.getToken(collectionUuid)
-//   await conn.close()
-
-//   if (!token) {
-//     throw new Error('Token not found, cannot mint')
-//   }
-
-//   await wallet.transferToken(token, destination, verificationCode)
-// }
-
 export async function createCollection(
   title: string | 'Anonymous Collection',
   description: string | '',

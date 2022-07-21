@@ -7,15 +7,18 @@ export default class Token {
   public sequence: bigint | null
   public uuid: string
   public ownerUUID: string
+  public collectionUUID: string
   public isClaimed: boolean
   public uniqueMintId: string | undefined
 
   constructor(
+    _collectionUUID: string,
     _contractAddress: string,
     _ownerUUID: string,
     _isClaimed: boolean,
     _sequence: bigint | null = null
   ) {
+    this.collectionUUID = _collectionUUID
     this.contractAddress = _contractAddress
     this.sequence = _sequence
     this.ownerUUID = _ownerUUID
@@ -35,6 +38,7 @@ export default class Token {
 
   static fromDatabase(result: any): Token {
     const t = new Token(
+      result.collectionUUID,
       result.contractAddress,
       result.ownerUUID,
       result.isClaimed,

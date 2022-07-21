@@ -95,6 +95,10 @@ export default class DbHelper {
     return Token.fromDatabase(result)
   }
 
+  async getTokenByUUID(uuid: string) {
+    return this.getToken({uuid})
+  }
+
   async createToken(token: Token) {
     const collection = 'tokens'
     let existingToken
