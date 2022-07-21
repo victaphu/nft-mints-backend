@@ -7,6 +7,7 @@ import {logger} from 'src/logger'
 import {PaymentController} from 'src/controller'
 import {errorToObject} from '../transport'
 import DbHelper from '../db-helper'
+import User from '../model/user'
 
 const l = logger(module)
 
@@ -55,9 +56,11 @@ const checkoutv2 = async (request: Request, response: Response) => {
     conn = await new DbHelper().connect()
     user = await conn.getUserByPhone(mobileNumber)
     if (!user) {
-      throw new Error(`User does not exist`)
+      // throw new Error(`User does not exist`)
+      await conn.createUser(new User(User.generateUUID(), mobileNumber))
+      user = await conn.getUserByPhone(mobileNumber)
     }
-    if (user.phone !== mobileNumber) {
+    if (user!.phone !== mobileNumber) {
       throw new Error(`User phone does not match records`)
     }
     const session = await PaymentController.checkoutv2({
@@ -66,7 +69,7 @@ const checkoutv2 = async (request: Request, response: Response) => {
       smsCode,
       successUrl,
       cancelUrl,
-      userId: user.uuid,
+      userId: user!.uuid,
     })
     response.status(200).json({url: session.url!})
   } catch (err) {
