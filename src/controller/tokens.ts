@@ -9,6 +9,15 @@ export async function fetchTokenByAddress(tokenAddress: string) {
   return dataObj.collections.find((nft) => nft.nftAddress === tokenAddress)
 }
 
+export async function fetchTokenByOwnerUuid(ownerUuid: string) {
+  const db = new DbHelper()
+  const con = await db.connect()
+  const results = await con.getTokensByOwner(ownerUuid)
+  await db.close()
+
+  return results
+}
+
 export async function fetchTokens() {
   console.log(dataObj)
   return dataObj

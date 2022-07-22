@@ -18,13 +18,15 @@ const getTokens = async (request: Request, response: Response) => {
   response.status(200).json(await TokenController.fetchTokens())
 }
 
-const getToken = async (request: Request, response: Response) => {
-  const {tokenAddress, tokenId} = request.params
+const getTokensByOwner = async (request: Request, response: Response) => {
+  const {ownerUuid} = request.params
 
   // if (tokenId) {
   // }
 
-  response.json(await TokenController.fetchTokenByAddress(tokenAddress))
+  response.json(
+    (await TokenController.fetchTokenByOwnerUuid(ownerUuid)).map((token) => token.toObject())
+  )
 }
 
 // TODO: For testing only
@@ -80,7 +82,7 @@ const init = (app: Router) => {
   app.post('/create', express.raw({type: 'application/json'}), createToken)
   app.get('/owner/:sequence/', express.raw({type: 'application/json'}), getWalletOwnerForNFT)
   app.get('/meta/:uuid/', express.raw({type: 'application/json'}), getMetadata)
-  app.get('/:tokenAddress/:tokenId?', express.raw({type: 'application/json'}), getToken)
+  app.get('/:userUuid', express.raw({type: 'application/json'}), getTokensByOwner)
   app.get('/', express.raw({type: 'application/json'}), getTokens)
 }
 

@@ -42,10 +42,19 @@ export default class Token {
       result.contractAddress,
       result.ownerUUID,
       result.isClaimed,
-      BigInt(result.sequence)
+      (result.sequence && BigInt(result.sequence)) || null
     )
     t.id = result._id
     t.uuid = result.uuid
     return t
+  }
+
+  toObject() {
+    return JSON.parse(
+      JSON.stringify(
+        this,
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value) // return everything else unchanged
+      )
+    )
   }
 }
