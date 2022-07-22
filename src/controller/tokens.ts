@@ -12,7 +12,24 @@ export async function fetchTokenByAddress(tokenAddress: string) {
 export async function fetchTokenByOwnerUuid(ownerUuid: string) {
   const db = new DbHelper()
   const con = await db.connect()
-  const results = await con.getTokensByOwner(ownerUuid)
+  const results = await Promise.all(
+    (
+      await con.getTokensByOwner(ownerUuid)
+    ).map(async (token: Token) => {
+      let collection = null
+      if (token.collectionUUID && token.collectionUUID !== '') {
+        collection = await db.getCollectionByUUID(token.collectionUUID)
+      }
+
+      return {
+        token: token.toObject(),
+        collection,
+      }
+    })
+  )
+
+  console.log(results)
+
   await db.close()
 
   return results

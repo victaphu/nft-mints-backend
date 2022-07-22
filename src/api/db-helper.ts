@@ -99,7 +99,7 @@ export default class DbHelper {
     return this.getToken({uuid})
   }
 
-  async getTokensByOwner(ownerUuid: string) {
+  async getTokensByOwner(ownerUuid: string): Promise<Token[]> {
     const collection = 'tokens'
     const result = await this.db?.collection(collection).find({ownerUuid})
     if (!result) {

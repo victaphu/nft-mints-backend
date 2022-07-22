@@ -24,9 +24,7 @@ const getTokensByOwner = async (request: Request, response: Response) => {
   // if (tokenId) {
   // }
 
-  response.json(
-    (await TokenController.fetchTokenByOwnerUuid(ownerUuid)).map((token) => token.toObject())
-  )
+  response.json(await TokenController.fetchTokenByOwnerUuid(ownerUuid))
 }
 
 // TODO: For testing only
