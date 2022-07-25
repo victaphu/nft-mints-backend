@@ -76,6 +76,8 @@ const checkoutv2 = async (request: Request, response: Response) => {
     console.log(err)
     response.status(400).send(errorToObject(err))
     return
+  } finally {
+    conn?.close()
   }
 }
 

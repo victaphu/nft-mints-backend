@@ -29,12 +29,13 @@ const getTokensByOwner = async (request: Request, response: Response) => {
 
 // TODO: For testing only
 const getWalletOwnerForNFT = async (req: Request, res: Response) => {
+  let conn
   try {
     const sequence = req.params.sequence
 
     const w = new Wallet()
     const db = new DbHelper()
-    const conn = await db.connect()
+    conn = await db.connect()
     const token = await conn.getToken({
       contractAddress: '0x7f273afb22d33432e341de43484f9c7dac28bb5e',
       sequence: sequence.toString(),
@@ -43,6 +44,8 @@ const getWalletOwnerForNFT = async (req: Request, res: Response) => {
   } catch (e) {
     console.error(e)
     return res.status(500)
+  } finally {
+    conn?.close()
   }
 }
 

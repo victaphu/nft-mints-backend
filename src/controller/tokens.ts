@@ -30,7 +30,7 @@ export async function fetchTokenByOwnerUuid(ownerUuid: string) {
 
   console.log(results)
 
-  await db.close()
+  await con.close()
 
   return results
 }
@@ -80,7 +80,7 @@ export async function createCollection(
   const db = new DbHelper()
   const con = await db.connect()
   await con.createCollection(c)
-  await db.close()
+  await con.close()
 
   return c
 }
@@ -96,7 +96,11 @@ export async function getCollectionByUUID(uuid: string) {
 export async function getCollectionById(id: string) {
   const db = new DbHelper()
   const con = await db.connect()
-  return await con.getCollectionsByFilter({_id: id})
+  try {
+    return await con.getCollectionsByFilter({_id: id})
+  } finally {
+    con.close()
+  }
 }
 
 export async function getCollectionByUser(userUuid: string) {
@@ -104,12 +108,20 @@ export async function getCollectionByUser(userUuid: string) {
   const db = new DbHelper()
 
   const con = await db.connect()
-  return await con.getCollectionsByFilter({userUuid})
+  try {
+    return await con.getCollectionsByFilter({userUuid})
+  } finally {
+    con.close()
+  }
 }
 
 export async function getCollections() {
   const db = new DbHelper()
 
   const con = await db.connect()
-  return await con.getCollectionsByFilter({})
+  try {
+    return await con.getCollectionsByFilter({})
+  } finally {
+    con.close()
+  }
 }
