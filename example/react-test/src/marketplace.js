@@ -4,8 +4,8 @@ import axios from 'axios'
 import {useParams} from 'react-router'
 
 const GATEWAY = 'https://smsnftgateway.herokuapp.com'
-const REDIRECT_URL_SUCCESS = 'https://d3jn-sms-minter.netlify.app/'
-const REDIRECT_URL_FAILURE = 'https://d3jn-sms-minter.netlify.app/'
+const REDIRECT_URL_SUCCESS = 'https://d3jn-sms-minter.netlify.app/:userUuid'
+const REDIRECT_URL_FAILURE = 'https://d3jn-sms-minter.netlify.app/:userUuid'
 
 function Marketplace() {
   const [page] = useState(0)

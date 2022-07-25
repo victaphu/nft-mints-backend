@@ -67,8 +67,8 @@ const checkoutv2 = async (request: Request, response: Response) => {
       nfts,
       mobileNumber,
       smsCode,
-      successUrl,
-      cancelUrl,
+      successUrl: successUrl.replace(':userUuid', user!.uuid),
+      cancelUrl: cancelUrl.replace(':userUuid', user!.uuid),
       userId: user!.uuid,
     })
     response.status(200).json({url: session.url!})
