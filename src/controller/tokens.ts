@@ -49,33 +49,40 @@ export async function createCollection(
   ownerUUID: string,
   collectionImage: string | ''
 ) {
-  if (+rate < 5) {
-    throw new Error('Rate must be greater than $5')
+  let price = rate
+  if (+rate < 1 || !rate) {
+    price = 0 // free if < 1
   }
+
+  // if (+rate < 5) {
+  //   throw new Error('Rate must be greater than $5')
+  // }
   console.log(arguments)
   const c = new Collection(
     ownerUUID,
     title || 'Anonymous Collection',
     description || '',
     link || '',
-    rate || 0,
+    price || 0,
     maxMint || 1
   )
   c.collectionImage = collectionImage
 
-  const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
+  if (price > 0) {
+    const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
 
-  const product = await StripeController.registerProduct(
-    title || 'Anonymous Collection',
-    description || 'Anonymous Collection',
-    tokenPrice,
-    c.addUUIDStamp(),
-    collectionImage
-  )
+    const product = await StripeController.registerProduct(
+      title || 'Anonymous Collection',
+      description || 'Anonymous Collection',
+      tokenPrice,
+      c.addUUIDStamp(),
+      collectionImage
+    )
 
-  c.productId = product.id
-  // @ts-ignore ignoring since price should be returned as a price object with specific id
-  c.priceId = product.default_price?.id
+    c.productId = product.id
+    // @ts-ignore ignoring since price should be returned as a price object with specific id
+    c.priceId = product.default_price?.id
+  } // no productId means product is free
 
   const db = new DbHelper()
   const con = await db.connect()

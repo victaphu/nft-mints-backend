@@ -3,7 +3,8 @@ import {useEffect, useState} from 'react'
 import axios from 'axios'
 import {useParams} from 'react-router'
 
-const GATEWAY = 'https://smsnftgateway.herokuapp.com'
+// const GATEWAY = 'http://smsnftgateway.herokuapp.com'
+const GATEWAY = 'http://localhost:3000'
 const REDIRECT_URL_SUCCESS = 'https://d3jn-sms-minter.netlify.app/:userUuid'
 const REDIRECT_URL_FAILURE = 'https://d3jn-sms-minter.netlify.app/:userUuid'
 
