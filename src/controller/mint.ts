@@ -16,6 +16,8 @@ export default async function mint(owner: User, collection: Collection) {
 
   // 3. Notify user
   await sendPostMintMessage(owner, token)
+
+  return token
 }
 
 export async function initializeClaim(owner: User) {

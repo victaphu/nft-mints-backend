@@ -94,9 +94,12 @@ export async function checkoutv2({
   if (freeMints.length > 0) {
     // mint free tokens for the user!
     // todo: allow more than one minting
-    await axios.get(
+    const response = await axios.get(
       `${process.env.SERVER_ENDPOINT_API}/v0/minter/chain-mint/${userId}/${freeMints[0]}`
     )
+
+    const token = response.data
+    successUrl = successUrl.replace(':tokenUuid', token.uuid)
   }
 
   if (lineItems.length === 0) {

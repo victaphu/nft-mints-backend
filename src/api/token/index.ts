@@ -27,6 +27,27 @@ const getTokensByOwner = async (request: Request, response: Response) => {
   response.json(await TokenController.fetchTokenByOwnerUuid(ownerUuid))
 }
 
+const getTokenByUUID = async (request: Request, response: Response) => {
+  const {tokenUuid} = request.params
+
+  let conn
+  try {
+    const db = new DbHelper()
+    conn = await db.connect()
+    const token = await conn.getTokenByUUID(tokenUuid)
+
+    response.json({
+      token: token.toObject(),
+      collection: token.collectionUUID && (await conn.getCollectionByUUID(token.collectionUUID)),
+    })
+  } catch (e) {
+    console.error(e)
+    response.status(500).send()
+  } finally {
+    conn?.close()
+  }
+}
+
 // TODO: For testing only
 const getWalletOwnerForNFT = async (req: Request, res: Response) => {
   let conn
@@ -81,6 +102,12 @@ const getMetadata = async (req: Request, res: Response) => {
 const init = (app: Router) => {
   console.log('Initialise')
   app.post('/create', express.raw({type: 'application/json'}), createToken)
+  app.get(
+    '/token/:tokenUuid',
+    express.raw({type: 'application/json'}),
+    body('tokenUuid').isUUID(),
+    getTokenByUUID
+  )
   app.get('/owner/:sequence/', express.raw({type: 'application/json'}), getWalletOwnerForNFT)
   app.get('/meta/:uuid/', express.raw({type: 'application/json'}), getMetadata)
   app.get('/:userUuid', express.raw({type: 'application/json'}), getTokensByOwner)
