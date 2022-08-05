@@ -24,6 +24,7 @@ export const config = {
   rpcUrl: process.env.RPC || '',
   web3: {
     privateKey: process.env.PRIVATE_KEY || '',
-    factoryContractAddress: process.env.FACTORY_CONTRACT_ADDRESS || '',
+    factoryContractAddress:
+      process.env.FACTORY_CONTRACT_ADDRESS || '0x29354b0c754563ff9a9263fddc390f8a1f7cf860',
   },
 }
