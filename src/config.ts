@@ -21,4 +21,9 @@ export const config = {
   api: {
     port: +(process.env.PORT || 3000),
   },
+  rpcUrl: process.env.RPC || '',
+  web3: {
+    privateKey: process.env.PRIVATE_KEY || '',
+    factoryContractAddress: process.env.FACTORY_CONTRACT_ADDRESS || '',
+  },
 }

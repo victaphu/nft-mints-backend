@@ -4,6 +4,7 @@ import Token from 'src/api/model/token'
 import Wallet from 'src/api/wallet'
 import dataObj from 'src/store/mock'
 import {StripeController} from '.'
+import {config} from '../config'
 
 export async function fetchTokenByAddress(tokenAddress: string) {
   return dataObj.collections.find((nft) => nft.nftAddress === tokenAddress)
@@ -69,6 +70,15 @@ export async function createCollection(
   // Refactor: "owner" will likely come from session after authentication is in place
   c.userUuid = userId
   c.collectionImage = collectionImage
+
+  const wallet = new Wallet()
+  const collectionAddress = await wallet.deployCollection(
+    c,
+    'test_symbol',
+    config.web3.factoryContractAddress // TODO: use owner address from session
+  )
+
+  c.collectionAddress = collectionAddress
 
   const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
 

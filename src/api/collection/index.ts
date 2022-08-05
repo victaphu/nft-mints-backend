@@ -8,10 +8,9 @@ const db = new DbHelper()
 
 const createCollection = async (req: Request, res: Response) => {
   // TODO: should we have the user here? mobile number + sms code?
-  const {title, description, link, rate, maxMint, collectionImage} = req.body
+  const {title, description, link, rate, maxMint, collectionImage, owner: userId} = req.body
   // Refactor: "owner" will likely come from session after authentication is in place
 
-  const userId = req.body.owner
   res.json(
     await TokenController.createCollection(
       title,
@@ -51,6 +50,7 @@ const init = (app: Router) => {
     body('link').isURL(),
     body('rate').isNumeric().default(0),
     body('maxMint').isNumeric().default(1),
+    body('owner').isString().isLength({min: 1}),
     createCollection
   )
 }
