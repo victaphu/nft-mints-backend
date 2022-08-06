@@ -1,6 +1,8 @@
 import {BigNumber, ethers} from 'ethers'
 // @ts-ignore
 import {abi} from './abi/MinterNFTV0'
+import {abi as NFTFactoryABI} from './abi/NFTFactory.json'
+import {config} from '../config'
 
 import User from './model/user'
 import Token from './model/token'
@@ -8,8 +10,8 @@ import DbHelper from './db-helper'
 import Collection from './model/collection'
 
 export default class Wallet {
-  private static PRIVATE_KEY_DEFAULT = process.env.PRIVATE_KEY || ''
-  private static RPC_DEFAULT = process.env.RPC || ''
+  private static PRIVATE_KEY_DEFAULT = config.web3.privateKey
+  private static RPC_DEFAULT = config.rpcUrl
   private provider: ethers.providers.Provider
   private wallet: ethers.Signer
 
@@ -43,6 +45,30 @@ export default class Wallet {
   async lookupOwnerForNFT(token: Token) {
     const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
     return contract.callStatic.ownerOf(token.sequence)
+  }
+
+  async deployCollection(
+    collection: Collection,
+    symbol: string,
+    ownerAddress: string
+  ): Promise<string> {
+    const {title, maxMint} = collection
+
+    const contract = new ethers.Contract(
+      config.web3.factoryContractAddress,
+      NFTFactoryABI,
+      this.wallet
+    )
+
+    const collectionAddress = await contract.callStatic.deployCollection(
+      title,
+      symbol,
+      ownerAddress,
+      maxMint
+    )
+
+    await contract.deployCollection(title, symbol, ownerAddress, maxMint)
+    return collectionAddress
   }
 
   // TODO: Can remove, used for testing only

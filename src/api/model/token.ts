@@ -1,5 +1,5 @@
 import web3 from 'web3'
-import {randomUUID} from "crypto";
+import {randomUUID} from 'crypto'
 
 export default class Token {
   public id: string | undefined
