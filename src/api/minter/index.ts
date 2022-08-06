@@ -21,8 +21,8 @@ const doMint = async (req: Request, res: Response) => {
     const owner = await conn.getUserByUUID(req.params.owner)
     const collection = await conn.getCollectionByUUID(req.params.collection)
     // Todo: handle null case
-    await mint(owner, collection!)
-    res.status(200).send()
+    const token = await mint(owner, collection!)
+    res.status(200).json(token)
   } catch (e) {
     console.error(e)
     res.status(500).json(e)

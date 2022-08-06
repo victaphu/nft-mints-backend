@@ -8,19 +8,21 @@ export default class Collection {
   public rate: number
   public maxMint: number
   public uuid: string | undefined
-  public collectionAddress = ''
-  public userUuid: string | undefined // todo: i think a collection needs an owner; can we make User the owner of a collection?
+  public collectionAddress: string = '0x7f273afb22d33432e341de43484f9c7dac28bb5e'
+  public ownerUUID: string
   public productId: string | undefined // stripe product id
   public priceId: string | undefined // strip price id
   public collectionImage: string | undefined
 
   constructor(
+    _ownerUUID: string,
     _title: string,
     _description: string,
     _link: string,
     _rate: number,
     _maxMint: number
   ) {
+    this.ownerUUID = _ownerUUID
     this.title = _title
     this.description = _description
     this.link = _link
@@ -39,6 +41,7 @@ export default class Collection {
 
   static fromDatabase(result: any): Collection {
     const t = new Collection(
+      result.ownerUUID,
       result.title,
       result.description,
       result.link,
@@ -48,7 +51,6 @@ export default class Collection {
     t.id = result.id
     t.uuid = result.uuid
     t.priceId = result.priceId
-    t.userUuid = result.userUuid
     t.productId = result.productId
     t.collectionImage =
       result.collectionImage ||

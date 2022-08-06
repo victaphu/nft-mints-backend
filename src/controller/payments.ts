@@ -73,18 +73,39 @@ export async function checkoutv2({
   userId,
 }: PaymentCheckoutv2) {
   const lineItems: any[] = []
+  const freeMints: any[] = []
 
   await Promise.all(
     nfts.map(async (nft: NFTInterface) => {
       const internal = await TokenController.getCollectionByUUID(nft.collectionUuid)
-      lineItems.push({price: internal?.priceId, quantity: nft.quantity})
+      if (internal?.rate === 0) {
+        freeMints.push(nft.collectionUuid)
+      } else {
+        lineItems.push({price: internal?.priceId, quantity: nft.quantity})
+      }
       // const tokens = internal?.tokens
       //   .filter((t: any) => nft.nftIds!.indexOf(t.tokenId) >= 0)
       //   .map((t: any) => lineItems.push({price: t.stripePriceId, quantity: 1}))
     })
   )
 
-  console.log(lineItems)
+  console.log(lineItems, freeMints)
+
+  if (freeMints.length > 0) {
+    // mint free tokens for the user!
+    // todo: allow more than one minting
+    const response = await axios.get(
+      `${process.env.SERVER_ENDPOINT_API}/v0/minter/chain-mint/${userId}/${freeMints[0]}`
+    )
+
+    const token = response.data
+    successUrl = successUrl.replace(':tokenUuid', token.uuid)
+  }
+
+  if (lineItems.length === 0) {
+    // no items to buy from stripe; bail!
+    return {url: successUrl}
+  }
 
   const session = await stripe.checkout.sessions.create({
     line_items: lineItems,

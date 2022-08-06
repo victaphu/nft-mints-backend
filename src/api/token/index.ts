@@ -18,23 +18,45 @@ const getTokens = async (request: Request, response: Response) => {
   response.status(200).json(await TokenController.fetchTokens())
 }
 
-const getToken = async (request: Request, response: Response) => {
-  const {tokenAddress, tokenId} = request.params
+const getTokensByOwner = async (request: Request, response: Response) => {
+  const {ownerUuid} = request.params
 
   // if (tokenId) {
   // }
 
-  response.json(await TokenController.fetchTokenByAddress(tokenAddress))
+  response.json(await TokenController.fetchTokenByOwnerUuid(ownerUuid))
+}
+
+const getTokenByUUID = async (request: Request, response: Response) => {
+  const {tokenUuid} = request.params
+
+  let conn
+  try {
+    const db = new DbHelper()
+    conn = await db.connect()
+    const token = await conn.getTokenByUUID(tokenUuid)
+
+    response.json({
+      token: token.toObject(),
+      collection: token.collectionUUID && (await conn.getCollectionByUUID(token.collectionUUID)),
+    })
+  } catch (e) {
+    console.error(e)
+    response.status(500).send()
+  } finally {
+    conn?.close()
+  }
 }
 
 // TODO: For testing only
 const getWalletOwnerForNFT = async (req: Request, res: Response) => {
+  let conn
   try {
     const sequence = req.params.sequence
 
     const w = new Wallet()
     const db = new DbHelper()
-    const conn = await db.connect()
+    conn = await db.connect()
     const token = await conn.getToken({
       contractAddress: '0x7f273afb22d33432e341de43484f9c7dac28bb5e',
       sequence: sequence.toString(),
@@ -43,14 +65,52 @@ const getWalletOwnerForNFT = async (req: Request, res: Response) => {
   } catch (e) {
     console.error(e)
     return res.status(500)
+  } finally {
+    conn?.close()
+  }
+}
+
+const getMetadata = async (req: Request, res: Response) => {
+  let conn
+  try {
+    const tokenUUID = req.params.uuid
+
+    const db = new DbHelper()
+    conn = await db.connect()
+    const token = await conn.getTokenByUUID(tokenUUID)
+    const collection = await conn.getCollectionByUUID(token.collectionUUID)
+    if (!collection) {
+      throw new Error(`Invalid collection ${token.collectionUUID} for token ${token.uuid}`)
+    }
+
+    const meta = {
+      name: collection.title,
+      description: collection.description,
+      external_url: `${process.env.FRONTEND_URI}/item/${token.uuid}`,
+      image: collection.collectionImage,
+      attributes: [],
+    }
+    res.json(meta)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send()
+  } finally {
+    conn?.close()
   }
 }
 
 const init = (app: Router) => {
   console.log('Initialise')
   app.post('/create', express.raw({type: 'application/json'}), createToken)
+  app.get(
+    '/token/:tokenUuid',
+    express.raw({type: 'application/json'}),
+    body('tokenUuid').isUUID(),
+    getTokenByUUID
+  )
   app.get('/owner/:sequence/', express.raw({type: 'application/json'}), getWalletOwnerForNFT)
-  app.get('/:tokenAddress/:tokenId?', express.raw({type: 'application/json'}), getToken)
+  app.get('/meta/:uuid/', express.raw({type: 'application/json'}), getMetadata)
+  app.get('/:userUuid', express.raw({type: 'application/json'}), getTokensByOwner)
   app.get('/', express.raw({type: 'application/json'}), getTokens)
 }
 

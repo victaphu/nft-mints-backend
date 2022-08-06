@@ -3,9 +3,10 @@ import {useEffect, useState} from 'react'
 import axios from 'axios'
 import {useParams} from 'react-router'
 
-const GATEWAY = 'http://localhost:3000'
-const REDIRECT_URL_SUCCESS = 'http://localhost:3001/'
-const REDIRECT_URL_FAILURE = 'http://localhost:3001/'
+const GATEWAY = 'https://smsnftgateway.herokuapp.com'
+//const GATEWAY = 'http://localhost:3000'
+const REDIRECT_URL_SUCCESS = 'https://d3jn-sms-minter.netlify.app/:userUuid/:tokenUuid'
+const REDIRECT_URL_FAILURE = 'https://d3jn-sms-minter.netlify.app/:userUuid/:tokenUuid'
 
 function Marketplace() {
   const [page] = useState(0)

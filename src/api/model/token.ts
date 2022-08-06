@@ -7,15 +7,18 @@ export default class Token {
   public sequence: bigint | null
   public uuid: string
   public ownerUUID: string
+  public collectionUUID: string
   public isClaimed: boolean
   public uniqueMintId: string | undefined
 
   constructor(
+    _collectionUUID: string,
     _contractAddress: string,
     _ownerUUID: string,
     _isClaimed: boolean,
     _sequence: bigint | null = null
   ) {
+    this.collectionUUID = _collectionUUID
     this.contractAddress = _contractAddress
     this.sequence = _sequence
     this.ownerUUID = _ownerUUID
@@ -35,13 +38,23 @@ export default class Token {
 
   static fromDatabase(result: any): Token {
     const t = new Token(
+      result.collectionUUID,
       result.contractAddress,
       result.ownerUUID,
       result.isClaimed,
-      BigInt(result.sequence)
+      (result.sequence && BigInt(result.sequence)) || null
     )
     t.id = result._id
     t.uuid = result.uuid
     return t
+  }
+
+  toObject() {
+    return JSON.parse(
+      JSON.stringify(
+        this,
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value) // return everything else unchanged
+      )
+    )
   }
 }

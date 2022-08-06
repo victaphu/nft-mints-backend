@@ -1,8 +1,8 @@
 import {useState} from 'react'
 import './App.css'
 
-const GATEWAY = 'http://localhost:3000'
-
+const GATEWAY = 'https://smsnftgateway.herokuapp.com'
+// const GATEWAY = 'http://localhost:3000'
 function Mint() {
   // Create Collection (once created redirect to the collectibles page)
   const [url, setUrl] = useState('')
@@ -12,12 +12,10 @@ function Mint() {
   const [rate, setRate] = useState(10)
   const [supply, setSupply] = useState(100)
   const [userId] = useState('') // hard coded user id for now
-
-  const [mintedUuid, setMintedUuid] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   async function submitData() {
-    if (url.length === 0 || title === 0 || rate === 0 || supply === 0) {
+    if (url.length === 0 || title === 0 || supply === 0) {
       return
     }
     setSubmitting((e) => {

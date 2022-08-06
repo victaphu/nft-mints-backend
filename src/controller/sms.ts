@@ -47,7 +47,7 @@ export async function verifySMSCode(destination: string, code: string) {
 export async function sendPostMintMessage(owner: User, token: Token) {
   sendSMS(
     owner.phone,
-    `Congratulations! Your NFT is ready! Go ahead, take a look. ${process.env.FRONTEND_URI}/view/${token.contractAddress}/${token.sequence}`
+    `Congratulations! Your Collectible is ready! Go ahead, take a look. ${process.env.FRONTEND_URI}/collectionable/${token.uuid}`
   )
 }
 
