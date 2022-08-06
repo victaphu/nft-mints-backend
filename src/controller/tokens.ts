@@ -4,6 +4,7 @@ import Token from 'src/api/model/token'
 import Wallet from 'src/api/wallet'
 import dataObj from 'src/store/mock'
 import {StripeController} from '.'
+import {config} from '../config'
 
 export async function fetchTokenByAddress(tokenAddress: string) {
   return dataObj.collections.find((nft) => nft.nftAddress === tokenAddress)
@@ -68,21 +69,29 @@ export async function createCollection(
   )
   c.collectionImage = collectionImage
 
-  if (price > 0) {
-    const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
+  const wallet = new Wallet()
+  const collectionAddress = await wallet.deployCollection(
+    c,
+    'test_symbol',
+    config.web3.factoryContractAddress // TODO: use owner address from session
+  )
 
-    const product = await StripeController.registerProduct(
-      title || 'Anonymous Collection',
-      description || 'Anonymous Collection',
-      tokenPrice,
-      c.addUUIDStamp(),
-      collectionImage
-    )
+  c.collectionAddress = collectionAddress
 
-    c.productId = product.id
-    // @ts-ignore ignoring since price should be returned as a price object with specific id
-    c.priceId = product.default_price?.id
-  } // no productId means product is free
+  const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
+
+  const product = await StripeController.registerProduct(
+    title || 'Anonymous Collection',
+    description || 'Anonymous Collection',
+    tokenPrice,
+    c.addUUIDStamp(),
+    collectionImage
+  )
+
+  c.productId = product.id
+  // @ts-ignore ignoring since price should be returned as a price object with specific id
+  c.priceId = product.default_price?.id
+  // no productId means product is free
 
   const db = new DbHelper()
   const con = await db.connect()
