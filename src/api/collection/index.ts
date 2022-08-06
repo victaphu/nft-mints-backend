@@ -11,7 +11,7 @@ const createCollection = async (req: Request, res: Response) => {
   const {title, description, link, rate, maxMint, collectionImage, owner: userId} = req.body
   // Refactor: "owner" will likely come from session after authentication is in place
 
-  const ownerUUID = req.body.owner
+  const ownerUUID = req.session.userUuid
   res.json(
     await TokenController.createCollection(
       title,
@@ -19,7 +19,7 @@ const createCollection = async (req: Request, res: Response) => {
       link,
       rate,
       maxMint,
-      ownerUUID,
+      ownerUUID!,
       collectionImage
     )
   )

@@ -14,6 +14,7 @@ const createUser = async (req: Request, res: Response) => {
   const conn = await db.connect()
   try {
     await conn.createUser(user)
+    req.session.userUuid = user.uuid // set user uuid here for now?
     return res.json(user)
   } finally {
     conn.close()
@@ -25,6 +26,7 @@ const getUser = async (req: Request, res: Response) => {
 
   const conn = await db.connect()
   try {
+    req.session.userUuid = uuid // connect user
     return res.json(await conn.getUserByUUID(uuid))
   } finally {
     conn.close()

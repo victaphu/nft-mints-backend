@@ -2,6 +2,8 @@ import {MongoClient, ServerApiVersion, Db} from 'mongodb'
 import User from './model/user'
 import Token from './model/token'
 import Collection from 'src/api/model/collection'
+import {UserType} from 'src/types/users'
+import StripeUser from './model/stripe'
 
 export default class DbHelper {
   private client: MongoClient | undefined
@@ -70,6 +72,12 @@ export default class DbHelper {
       .findOneAndUpdate({uuid: user.uuid}, {$set: {...user}}, {upsert: true})
   }
 
+  async changeUserType(userUuid: string, type: UserType) {
+    const user = await this.getUserByUUID(userUuid)
+    user.userType = type
+    return await this.updateUser(user)
+  }
+
   async getUserByPhone(phone: string) {
     const collection = 'users'
     const result = await this.db?.collection(collection).findOne({phone: phone})
@@ -84,6 +92,25 @@ export default class DbHelper {
       throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
     }
     return User.fromDatabase(result)
+  }
+
+  async createStripeUser(stripeUser: StripeUser) {
+    const collection = 'stripeuser'
+    const existingUser = await this.getStripeUser(stripeUser.userUuid)
+    if (existingUser) {
+      throw new DbError(DbError.Type.ALREADY_EXISTS, 'stripeuser already exists')
+    }
+    const objToAdd = {...stripeUser, dateCreated: new Date().toISOString()}
+    return this.db?.collection(collection).insertOne(objToAdd)
+  }
+
+  async getStripeUser(userUuid: string) {
+    const collection = 'stripeuser'
+    const result = await this.db?.collection(collection).findOne({userUuid})
+    if (!result) {
+      return null
+    }
+    return StripeUser.fromDatabase(result)
   }
 
   async getToken(filter: any): Promise<Token> {

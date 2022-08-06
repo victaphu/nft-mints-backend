@@ -1,4 +1,5 @@
 import express, {Router} from 'express'
+import session from 'express-session'
 import helmet from 'helmet'
 import compression from 'compression'
 import cors from 'cors'
@@ -11,9 +12,17 @@ import token from './token'
 import collection from './collection'
 import user from './user'
 import mint from './minter'
+import stripe from './stripe'
 
 import bodyParser from 'body-parser'
 const l = logger(module)
+
+declare module 'express-session' {
+  export interface SessionData {
+    state: string // { [key: string]: any };
+    userUuid: string
+  }
+}
 
 export const RESTServer = async () => {
   const api = express()
@@ -26,6 +35,7 @@ export const RESTServer = async () => {
       origin: '*',
     })
   )
+  api.use(session({secret: process.env.SESSION_SECRET!}))
   // api.use(compression)
   api.use((req, res, next) => {
     if (req.originalUrl === '/v0/payment/hook') {
@@ -44,6 +54,7 @@ export const RESTServer = async () => {
   const tokensRouter = Router({mergeParams: true})
   const collectionsRouter = Router({mergeParams: true})
   const usersRouter = Router({mergeParams: true})
+  const stripeConnect = Router({mergeParams: true})
 
   api.use('/v0/payment', paymentRouter)
   api.use('/v0/minter', minterRouter)
@@ -51,6 +62,7 @@ export const RESTServer = async () => {
   api.use('/v0/tokens', tokensRouter)
   api.use('/v0/collections', collectionsRouter)
   api.use('/v0/users', usersRouter)
+  api.use('/v0/stripe', stripeConnect)
 
   let server: Server
 
@@ -62,6 +74,7 @@ export const RESTServer = async () => {
   token(tokensRouter)
   collection(collectionsRouter)
   user(usersRouter)
+  stripe(stripeConnect)
 
   l.info('REST API starting...')
   try {
