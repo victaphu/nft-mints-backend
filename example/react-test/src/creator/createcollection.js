@@ -60,13 +60,13 @@ function CreateCollection() {
     if (checkLogin) return
     console.log('checking login')
     //
-    const result = fetch(`${GATEWAY}/v0/users/whoami`, {
+    fetch(`${GATEWAY}/v0/users/whoami`, {
       method: 'GET',
       credentials: 'include',
     })
       .then(async (result) => {
         console.log(result)
-        if (result.status != 200) {
+        if (result.status !== 200) {
           navigate('/creator/login')
         } else {
           setCheckLogin(true)
@@ -77,7 +77,7 @@ function CreateCollection() {
         console.log(e)
         navigate('/creator/login')
       })
-  }, [checkLogin])
+  }, [checkLogin, navigate])
 
   if (!checkLogin) {
     return <div>Loading ...</div>
