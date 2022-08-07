@@ -1,7 +1,6 @@
 import './App.css'
 import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom'
 import Marketplace from './marketplace'
-import Mint from './mint'
 import Register from './creator/register'
 import Login from './creator/login'
 import Connect from './creator/connect'

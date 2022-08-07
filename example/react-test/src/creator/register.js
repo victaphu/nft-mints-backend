@@ -1,7 +1,6 @@
 // capture mobile and forward to sms wallet
 
 import {useState} from 'react'
-import Cookies from 'js-cookie'
 import {useNavigate} from 'react-router'
 
 const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
