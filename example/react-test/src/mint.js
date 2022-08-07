@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import './App.css'
 
-const GATEWAY = 'https://smsnftgateway.herokuapp.com'
+const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
 // const GATEWAY = 'http://localhost:3000'
 function Mint() {
   // Create Collection (once created redirect to the collectibles page)

@@ -1,8 +1,8 @@
 import {useEffect, useState} from 'react'
 import {useNavigate} from 'react-router'
 
-// const GATEWAY = 'https://smsnftgateway.herokuapp.com'
-const GATEWAY = 'http://localhost:3000'
+const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
+// const GATEWAY = 'http://localhost:3000'
 function CreateCollection() {
   const navigate = useNavigate()
   // Create Collection (once created redirect to the collectibles page)

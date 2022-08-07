@@ -4,8 +4,8 @@ import {useState} from 'react'
 import Cookies from 'js-cookie'
 import {useNavigate} from 'react-router'
 
-// const GATEWAY = 'https://smsnftgateway.herokuapp.com'
-const GATEWAY = 'http://localhost:3000'
+const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
+// const GATEWAY = 'http://localhost:3000'
 function Register() {
   const [mobileNumber, setMobileNumber] = useState('+6584901105')
   const [connecting, setConnecting] = useState(false)
