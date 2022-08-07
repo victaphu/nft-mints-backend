@@ -26,7 +26,6 @@ export const getOAUTHLink = async (req: Request) => {
     throw new Error('Invalid, userUuid is not defined, please login')
   }
 
-  console.log('Userid is ', userUuid)
   const args = new URLSearchParams({
     state,
     client_id: stripeClientId!,
@@ -41,7 +40,7 @@ export const getOAUTHLink = async (req: Request) => {
 export const authorizeOAUTH = async (req: Request) => {
   const {code, state} = req.query
 
-  console.log('received response', code, state)
+  console.log('received response', code, state, req.session.userUuid)
 
   // Assert the state matches the state you provided in the OAuth link (optional).
   if (req.session.state !== state) {
@@ -56,9 +55,13 @@ export const authorizeOAUTH = async (req: Request) => {
   })
 
   try {
-    const connectedAccount = response.stripe_user_id!
-    console.log(response)
-    await saveAccountId({id: connectedAccount!, userUuid: req.session.userUuid!})
+    await saveAccountId({
+      userUuid: req.session.userUuid!,
+      accessToken: response.access_token!,
+      refreshToken: response.refresh_token!,
+      stripeUserId: response.stripe_user_id!,
+      stripePublishableKey: response.stripe_publishable_key!,
+    })
     return authorizedSuccessUrl
   } catch (err) {
     if (err.type === 'StripeInvalidGrantError') {
@@ -94,7 +97,7 @@ const saveAccountId = async ({
   let con = null
   try {
     con = await new DbHelper().connect()
-    con.createStripeUser(stripeUser)
+    await con.createStripeUser(stripeUser)
     return
   } finally {
     if (con) {
