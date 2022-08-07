@@ -1,4 +1,5 @@
 import crypto, {randomUUID} from 'crypto'
+import {UserType} from 'src/types/users'
 
 export default class User {
   public id: string | undefined
@@ -7,6 +8,8 @@ export default class User {
   public pendingCode = ''
   public codeHash = ''
   public lastSentCode: number = 0
+  public userType: UserType = UserType.USER
+  public stripeConnected: boolean = false
 
   constructor(uuid: string, phone: string) {
     this.uuid = uuid || User.generateUUID()
@@ -24,11 +27,13 @@ export default class User {
     return randomUUID()
   }
 
-  static fromDatabase(result: any) {
+  static fromDatabase(result: any, stripeConnected = false) {
     const u = new User(result.uuid, result.phone)
     u.id = result.id
     u.pendingCode = result.pendingCode
     u.codeHash = result.codeHash
+    u.userType = result.userType || UserType.USER
+    u.stripeConnected = stripeConnected
     return u
   }
 }

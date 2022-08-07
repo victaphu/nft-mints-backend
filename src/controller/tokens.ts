@@ -3,6 +3,7 @@ import Collection from 'src/api/model/collection'
 import Token from 'src/api/model/token'
 import Wallet from 'src/api/wallet'
 import dataObj from 'src/store/mock'
+import {TokenType} from 'src/types/tokens'
 import {StripeController} from '.'
 import {config} from '../config'
 
@@ -48,7 +49,9 @@ export async function createCollection(
   rate: number | 0,
   maxMint: number | 1,
   ownerUUID: string,
-  collectionImage: string | ''
+  collectionImage: string | '',
+  tokenType: TokenType = TokenType.COLLECTION,
+  launch: boolean = false
 ) {
   let price = rate
   if (+rate < 1 || !rate) {
@@ -68,30 +71,36 @@ export async function createCollection(
     maxMint || 1
   )
   c.collectionImage = collectionImage
+  c.tokenType = tokenType
 
-  const wallet = new Wallet()
-  const collectionAddress = await wallet.deployCollection(
-    c,
-    'test_symbol',
-    config.web3.factoryContractAddress // TODO: use owner address from session
-  )
+  if (launch) {
+    const wallet = new Wallet()
+    const collectionAddress = await wallet.deployCollection(
+      c,
+      'test_symbol',
+      config.web3.factoryContractAddress // TODO: use owner address from session
+    )
 
-  c.collectionAddress = collectionAddress
+    c.collectionAddress = collectionAddress
+  }
 
-  const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
-
-  const product = await StripeController.registerProduct(
-    title || 'Anonymous Collection',
-    description || 'Anonymous Collection',
-    tokenPrice,
-    c.addUUIDStamp(),
-    collectionImage
-  )
-
-  c.productId = product.id
-  // @ts-ignore ignoring since price should be returned as a price object with specific id
-  c.priceId = product.default_price?.id
   // no productId means product is free
+  if (price > 0) {
+    const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
+
+    const product = await StripeController.registerProduct(
+      ownerUUID,
+      title || 'Anonymous Collection',
+      description || 'Anonymous Collection',
+      tokenPrice,
+      c.addUUIDStamp(),
+      collectionImage
+    )
+
+    c.productId = product.id
+    // @ts-ignore ignoring since price should be returned as a price object with specific id
+    c.priceId = product.default_price?.id
+  } // no productId means product is free
 
   const db = new DbHelper()
   const con = await db.connect()
@@ -106,7 +115,11 @@ export async function getCollectionByUUID(uuid: string) {
   const db = new DbHelper()
 
   const con = await db.connect()
-  return await con.getCollectionByUUID(uuid)
+  try {
+    return await con.getCollectionByUUID(uuid)
+  } finally {
+    con?.close()
+  }
 }
 
 export async function getCollectionById(id: string) {
@@ -114,6 +127,23 @@ export async function getCollectionById(id: string) {
   const con = await db.connect()
   try {
     return await con.getCollectionsByFilter({_id: id})
+  } finally {
+    con?.close()
+  }
+}
+
+export async function getUserDetailsWithCollections(userUuid: string) {
+  console.log('Get collection and user details', userUuid)
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  try {
+    const user = await con.getUserByUUID(userUuid)
+    const collections = await con.getCollectionsByFilter({ownerUUID: userUuid})
+    return {
+      user,
+      collections,
+    }
   } finally {
     con.close()
   }
@@ -125,7 +155,7 @@ export async function getCollectionByUser(userUuid: string) {
 
   const con = await db.connect()
   try {
-    return await con.getCollectionsByFilter({userUuid})
+    return await con.getCollectionsByFilter({ownerUUID: userUuid})
   } finally {
     con.close()
   }
