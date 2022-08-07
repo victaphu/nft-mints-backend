@@ -226,11 +226,20 @@ export default class DbHelper {
 
     const collections: Collection[] = []
     const resultArray = await result.toArray()
+    console.log('result is', resultArray, filter)
 
     resultArray.forEach((r) => {
       collections.push(Collection.fromDatabase(r))
     })
     return collections
+  }
+
+  async getCollectionByOwnerUUID(ownerUuid: string) {
+    const mongoCollection = 'collections'
+    const result = await this.db?.collection(mongoCollection).findOne({ownerUuid})
+    console.log('Result is', result, ownerUuid)
+    if (!result) return null
+    return Collection.fromDatabase(result)
   }
 
   async getCollectionByUUID(uuid: string) {

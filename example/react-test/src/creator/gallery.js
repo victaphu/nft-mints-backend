@@ -7,6 +7,11 @@ const GATEWAY = 'http://localhost:3000'
 const REDIRECT_URL_SUCCESS = 'https://d3jn-sms-minter.netlify.app/:userUuid/:tokenUuid'
 const REDIRECT_URL_FAILURE = 'https://d3jn-sms-minter.netlify.app/:userUuid/:tokenUuid'
 
+// todo: short cut at the moment
+// it just grabs all the collections and the front end apply filter on type
+// future will be more complex api
+const selected = ['Access Pass', 'Air drop', 'Collections']
+
 function Gallery() {
   const navigate = useNavigate()
   const [page] = useState(0)
@@ -21,6 +26,8 @@ function Gallery() {
   const [buying, setBuying] = useState(false)
 
   const params = useParams()
+
+  const [view, setView] = useState(3) // 3 = collections, 2 = air drop, 1 = access pass
 
   // get list of nfts
   useEffect(() => {
@@ -43,36 +50,6 @@ function Gallery() {
         navigate('/creator/login')
       })
   }, [filters, page, params.collectionUuid])
-
-  // let user select nft to purchase
-  async function purchaseNfts() {
-    if (smsCode.length === 0 || mobileNumber.length === 0 || selectedNfts.length === 0) {
-      return
-    }
-
-    const body = {
-      nfts: selectedNfts.map((collection) => {
-        return {collectionUuid: collection.uuid, quantity: 1}
-      }),
-      mobileNumber: mobileNumber,
-      smsCode: smsCode,
-      successUrl: REDIRECT_URL_SUCCESS,
-      cancelUrl: REDIRECT_URL_FAILURE,
-    }
-
-    const res = await fetch(`${GATEWAY}/v0/payment/checkoutv2`, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-
-    setBuying(false)
-
-    window.location.href = (await res.json()).url
-  }
 
   function toggleTokenSelection(token, value) {
     if (selectedNfts.find((t) => t.uuid === token.uuid)) {
@@ -142,98 +119,23 @@ function Gallery() {
   function renderNft(nfts) {
     return (
       <div>
-        {nfts.map((token, index) => {
-          return (
-            <div
-              key={index}
-              style={{display: 'inline-block', margin: '8px', padding: '4px', border: 'solid'}}
-            >
-              <div>
-                <img height="200px" alt="nft token" src={token.collectionImage}></img>
-                <br />
-                {renderTokenDetails(token)}
-                {renderSelection(0, token)}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-
-  function renderPurchaseInformation() {
-    let total = 0
-    return (
-      <div
-        style={{
-          width: '300px',
-          margin: 'auto',
-          marginTop: '10px',
-          marginBottom: '10px',
-          border: 'solid 1px black',
-          padding: '10px',
-        }}
-      >
-        Tokens Selected:
-        <hr />
-        <ul>
-          {selectedNfts.map((nft, index) => {
-            total += +nft.rate
+        {nfts
+          .filter((e) => e.tokenType === view)
+          .map((token, index) => {
             return (
-              <li key={index}>
-                {nft.title} - USD${nft.rate}
-              </li>
+              <div
+                key={index}
+                style={{display: 'inline-block', margin: '8px', padding: '4px', border: 'solid'}}
+              >
+                <div>
+                  <img height="200px" alt="nft token" src={token.collectionImage}></img>
+                  <br />
+                  {renderTokenDetails(token)}
+                  {renderSelection(0, token)}
+                </div>
+              </div>
             )
           })}
-        </ul>
-        <hr />
-        <div>Total: USD${total}</div>
-      </div>
-    )
-  }
-
-  function renderCheckout() {
-    return (
-      <div style={{width: '300px', margin: 'auto'}}>
-        <div>
-          Mobile:{' '}
-          <input
-            type="text"
-            onChange={(e) => {
-              setSmsSent(false)
-              setMobileNumber(e.target.value)
-            }}
-            value={mobileNumber}
-          />
-          <button disabled={smsSent} onClick={(e) => sendSmsCode()}>
-            Send Code
-          </button>
-        </div>
-        <br />
-        <div>
-          SMS Code:{' '}
-          <input
-            type="text"
-            disabled={!smsSent}
-            onChange={(e) => setSmsCode(e.target.value)}
-            value={smsCode}
-          />
-        </div>
-        <button
-          disabled={
-            selectedNfts.length === 0 ||
-            !smsSent ||
-            smsCode.length === 0 ||
-            mobileNumber.length === 0 ||
-            buying
-          }
-          onClick={(e) => {
-            purchaseNfts()
-            setBuying(true)
-          }}
-        >
-          Purchase NFTs
-        </button>
       </div>
     )
   }
@@ -250,14 +152,20 @@ function Gallery() {
       )}
 
       {nfts.length === 0 && <div>You don't have any NFTs at the moment, mint some!</div>}
-      <button>Collections</button>
-      <button>Access Passes</button>
-      <button>Airdrops</button>
+      <button onClick={(e) => setView(3)} disabled={view === 3}>
+        Collections
+      </button>
+      <button onClick={(e) => setView(1)} disabled={view === 1}>
+        Access Passes
+      </button>
+      <button onClick={(e) => setView(2)} disabled={view === 2}>
+        Airdrops
+      </button>
+      <button onClick={(e) => navigate('/creator/create')}>Create</button>
 
       {nfts.length > 0 && (
         <div>
-          Collection: <div>{renderNft(nfts)}</div>
-          <div>{renderPurchaseInformation()}</div>
+          {selected[view - 1]}: <div>{renderNft(nfts)}</div>
         </div>
       )}
     </div>

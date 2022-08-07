@@ -77,6 +77,7 @@ const getUserByPhone = async (req: Request, res: Response) => {
 
 const init = (app: Router) => {
   app.post('/', body('phone').isString().isLength({min: 10}), createUser)
+  app.get('/whoami', getUserBySession)
   app.get('/:uuid', getUser)
   app.get('/phone/:phone', getUserByPhone)
 }

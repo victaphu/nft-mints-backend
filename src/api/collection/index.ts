@@ -8,10 +8,14 @@ const db = new DbHelper()
 
 const createCollection = async (req: Request, res: Response) => {
   // TODO: should we have the user here? mobile number + sms code?
-  const {title, description, link, rate, maxMint, collectionImage, owner: userId} = req.body
-  // Refactor: "owner" will likely come from session after authentication is in place
-
+  const {title, description, link, rate, maxMint, collectionImage, tokenType, launch} = req.body
   const ownerUUID = req.session.userUuid
+
+  if (!ownerUUID) {
+    // todo: refactor protected path using express-session
+    return res.status(400).send({message: 'Login as creator first'})
+  }
+
   res.json(
     await TokenController.createCollection(
       title,
@@ -20,7 +24,9 @@ const createCollection = async (req: Request, res: Response) => {
       rate,
       maxMint,
       ownerUUID!,
-      collectionImage
+      collectionImage,
+      +tokenType,
+      launch
     )
   )
 }
@@ -62,6 +68,7 @@ const init = (app: Router) => {
     body('rate').isNumeric().default(0),
     body('maxMint').isNumeric().default(1),
     body('owner').isString().isLength({min: 1}),
+    body('tokenType').isNumeric().isIn([1, 2, 3]),
     createCollection
   )
 }

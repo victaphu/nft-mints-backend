@@ -1,4 +1,5 @@
 import {randomUUID} from 'crypto'
+import {TokenType} from 'src/types/tokens'
 
 export default class Collection {
   public id: string | undefined
@@ -8,11 +9,12 @@ export default class Collection {
   public rate: number
   public maxMint: number
   public uuid: string | undefined
-  public collectionAddress: string = '0x7f273afb22d33432e341de43484f9c7dac28bb5e'
+  public collectionAddress: string = '' // if this is defined collection has launched, else collection in 'draft'
   public ownerUUID: string
-  public productId: string | undefined // stripe product id
-  public priceId: string | undefined // strip price id
+  public productId: string | undefined // stripe product id; only valid if the token rate > 0
+  public priceId: string | undefined // strip price id; only valid if the token rate > 0
   public collectionImage: string | undefined
+  public tokenType: TokenType = TokenType.COLLECTION // token type, airdrop / collection / access pass
 
   constructor(
     _ownerUUID: string,
@@ -52,6 +54,7 @@ export default class Collection {
     t.uuid = result.uuid
     t.priceId = result.priceId
     t.productId = result.productId
+    t.tokenType = result.tokenType
     t.collectionImage =
       result.collectionImage ||
       'https://ipfs.io/ipfs/QmNf1UsmdGaMbpatQ6toXSkzDpizaGmC9zfunCyoz1enD5/penguin/1.png'
