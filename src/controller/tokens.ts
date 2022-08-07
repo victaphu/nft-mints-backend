@@ -122,6 +122,23 @@ export async function getCollectionById(id: string) {
   }
 }
 
+export async function getUserDetailsWithCollections(userUuid: string) {
+  console.log('Get collection and user details', userUuid)
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  try {
+    const user = await con.getUserByUUID(userUuid)
+    const collections = await con.getCollectionsByFilter({userUuid})
+    return {
+      user,
+      collections,
+    }
+  } finally {
+    con.close()
+  }
+}
+
 export async function getCollectionByUser(userUuid: string) {
   console.log('Get collection', userUuid)
   const db = new DbHelper()

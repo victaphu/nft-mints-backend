@@ -82,7 +82,10 @@ export default class DbHelper {
     const collection = 'users'
     const result = await this.db?.collection(collection).findOne({phone: phone})
     if (!result) return null
-    return User.fromDatabase(result)
+
+    const user = User.fromDatabase(result)
+    user.stripeConnected = (await this.getStripeUser(user.uuid)) != null
+    return user
   }
 
   async getUserByUUID(uuid: string): Promise<User> {
@@ -91,17 +94,29 @@ export default class DbHelper {
     if (!result) {
       throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
     }
-    return User.fromDatabase(result)
+
+    const user = User.fromDatabase(result)
+    user.stripeConnected = (await this.getStripeUser(user.uuid)) != null
+    return user
   }
 
   async createStripeUser(stripeUser: StripeUser) {
     const collection = 'stripeuser'
     const existingUser = await this.getStripeUser(stripeUser.userUuid)
     if (existingUser) {
-      throw new DbError(DbError.Type.ALREADY_EXISTS, 'stripeuser already exists')
+      throw new DbError(
+        DbError.Type.ALREADY_EXISTS,
+        'stripeuser already exists, disconnect before re-connecting'
+      )
     }
     const objToAdd = {...stripeUser, dateCreated: new Date().toISOString()}
     return this.db?.collection(collection).insertOne(objToAdd)
+  }
+
+  async disconnectStripeUser(userUuid: string) {
+    const collection = 'stripeuser'
+    const result = await this.db?.collection(collection).deleteOne({userUuid})
+    return result
   }
 
   async getStripeUser(userUuid: string) {

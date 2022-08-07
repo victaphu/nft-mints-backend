@@ -9,6 +9,7 @@ export default class User {
   public codeHash = ''
   public lastSentCode: number = 0
   public userType: UserType = UserType.USER
+  public stripeConnected: boolean = false
 
   constructor(uuid: string, phone: string) {
     this.uuid = uuid || User.generateUUID()
@@ -26,12 +27,13 @@ export default class User {
     return randomUUID()
   }
 
-  static fromDatabase(result: any) {
+  static fromDatabase(result: any, stripeConnected = false) {
     const u = new User(result.uuid, result.phone)
     u.id = result.id
     u.pendingCode = result.pendingCode
     u.codeHash = result.codeHash
     u.userType = result.userType || UserType.USER
+    u.stripeConnected = stripeConnected
     return u
   }
 }

@@ -1,11 +1,11 @@
 import express, {Router} from 'express'
 import session from 'express-session'
 import helmet from 'helmet'
-import compression from 'compression'
 import cors from 'cors'
 import {logger} from 'src/logger'
 import http, {Server} from 'http'
 import {config} from 'src/config'
+import cookieParser from 'cookie-parser'
 import payment from './payment'
 import sms from './smsgateway'
 import token from './token'
@@ -21,8 +21,11 @@ declare module 'express-session' {
   export interface SessionData {
     state: string // { [key: string]: any };
     userUuid: string
+    counter: number
   }
 }
+
+const whitelist = ['http://localhost:3000', 'http://localhost:3001', 'https://stripe.']
 
 export const RESTServer = async () => {
   const api = express()
@@ -32,9 +35,18 @@ export const RESTServer = async () => {
   // todo: fix origin
   api.use(
     cors({
-      origin: '*',
+      origin: (origin, callback) => {
+        if (origin === undefined || whitelist.indexOf(origin!) !== -1) {
+          callback(null, true)
+        } else {
+          console.log('failed', origin)
+          callback(new Error('Not allowed by CORS ' + origin))
+        }
+      },
+      credentials: true,
     })
   )
+  api.use(cookieParser())
   api.use(session({secret: process.env.SESSION_SECRET!}))
   // api.use(compression)
   api.use((req, res, next) => {

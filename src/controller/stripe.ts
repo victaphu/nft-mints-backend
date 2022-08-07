@@ -19,7 +19,14 @@ const stripe = new Stripe(stripeAPIKey!, {
 // step 1 - generate the oauth link. send users to this link when button is clicked
 export const getOAUTHLink = async (req: Request) => {
   const state = uuidv4()
+  const userUuid = req.session.userUuid
   req.session.state = state
+
+  if (!userUuid) {
+    throw new Error('Invalid, userUuid is not defined, please login')
+  }
+
+  console.log('Userid is ', userUuid)
   const args = new URLSearchParams({
     state,
     client_id: stripeClientId!,
@@ -38,6 +45,7 @@ export const authorizeOAUTH = async (req: Request) => {
 
   // Assert the state matches the state you provided in the OAuth link (optional).
   if (req.session.state !== state) {
+    console.log(req.session.state, 'not same as', state)
     throw new Error('Incorrect state parameter: ' + state)
   }
 
@@ -125,6 +133,7 @@ export async function registerProduct(
   collectionUuid: string,
   image: string
 ) {
+  // fails if the user has not registered their stripe account yet!
   const stripeRemote = await getStripeObjectByUserUuid(ownerUuid)
 
   console.log('Creating product:', arguments)

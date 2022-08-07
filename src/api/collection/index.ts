@@ -36,12 +36,22 @@ const getCollectionsByUser = async (req: Request, res: Response) => {
   return res.json(await TokenController.getCollectionByUser(uuid))
 }
 
+const getUserDetailsWithCollections = async (req: Request, res: Response) => {
+  // fetch your collections (by your uuid)
+  // if no uuid we will throw exception
+  if (!req.session.userUuid) {
+    return res.status(400).send({message: 'Login as creator first'})
+  }
+  return res.json(await TokenController.getUserDetailsWithCollections(req.session.userUuid!))
+}
+
 const getCollections = async (req: Request, res: Response) => {
   return res.json(await TokenController.getCollections())
 }
 
 const init = (app: Router) => {
   app.get('/all', getCollections)
+  app.get('/mycollections', getUserDetailsWithCollections)
   app.get('/:uuid', getCollection)
   app.get('/user/:userUuid', body('userUuid').isUUID(), getCollectionsByUser)
   app.post(
