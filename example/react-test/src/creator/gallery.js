@@ -3,9 +3,6 @@ import axios from 'axios'
 import {useNavigate, useParams} from 'react-router'
 
 const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
-// const GATEWAY = 'http://localhost:3000'
-const REDIRECT_URL_SUCCESS = 'https://d3jn-sms-minter.netlify.app/:userUuid/:tokenUuid'
-const REDIRECT_URL_FAILURE = 'https://d3jn-sms-minter.netlify.app/:userUuid/:tokenUuid'
 
 // todo: short cut at the moment
 // it just grabs all the collections and the front end apply filter on type
@@ -20,10 +17,6 @@ function Gallery() {
   const [nfts, setNfts] = useState([])
   const [userDetails, setUserDetails] = useState({})
   const [selectedNfts, setSelectedNfts] = useState([])
-  const [smsSent, setSmsSent] = useState(true)
-  const [mobileNumber, setMobileNumber] = useState('+6584901105')
-  const [smsCode, setSmsCode] = useState('05270')
-  const [buying, setBuying] = useState(false)
 
   const params = useParams()
 
@@ -49,7 +42,7 @@ function Gallery() {
         // redirect creator to login
         navigate('/creator/login')
       })
-  }, [filters, page, params.collectionUuid])
+  }, [filters, page, params.collectionUuid, navigate])
 
   function toggleTokenSelection(token, value) {
     if (selectedNfts.find((t) => t.uuid === token.uuid)) {
@@ -81,24 +74,6 @@ function Gallery() {
         <input type="number" onChange={(e) => toggleTokenSelection(token, e.target.value)}></input>
       </div>
     )
-  }
-
-  async function sendSmsCode() {
-    if (mobileNumber.length <= 0) {
-      return
-    }
-    // result
-    await fetch(`${GATEWAY}/v0/sms/verify`, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phone: mobileNumber,
-      }),
-    })
-    setSmsSent(true)
   }
 
   function renderTokenDetails(token) {

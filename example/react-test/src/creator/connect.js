@@ -35,16 +35,15 @@ function Connect() {
         Connect Stripe
       </button>
       <br></br>
-      <a
-        href="#"
-        referrerPolicy="no-referrer"
+      <button
+        disabled={connecting}
         onClick={(e) => {
           if (connecting) return
           navigate('/creator')
         }}
       >
         Skip
-      </a>
+      </button>
     </div>
   )
 }
