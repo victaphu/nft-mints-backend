@@ -25,7 +25,7 @@ declare module 'express-session' {
   }
 }
 
-const whitelist = ['http://localhost:3000', 'http://localhost:3001', 'https://stripe.']
+const whitelist = process.env.WHITELIST_CORS!.split(';;')
 
 export const RESTServer = async () => {
   const api = express()
