@@ -27,6 +27,11 @@ declare module 'express-session' {
 
 const whitelist = process.env.WHITELIST_CORS!.split(';;')
 
+// https://github.com/expressjs/session/issues/725
+function when(test: any, a: any, b: any) {
+  return (req: any, res: any, next: any) => (test(req, res) ? a : b)(req, res, next)
+}
+
 export const RESTServer = async () => {
   const api = express()
 
@@ -47,7 +52,26 @@ export const RESTServer = async () => {
     })
   )
   api.use(cookieParser())
-  api.use(session({secret: process.env.SESSION_SECRET!}))
+  api.use(
+    when(
+      (req: any) => req.protocol === 'https',
+      session({
+        secret: process.env.SESSION_SECRET!,
+        cookie: {
+          secure: true,
+          httpOnly: true,
+          sameSite: 'none',
+        },
+      }),
+      session({
+        secret: process.env.SESSION_SECRET!,
+        cookie: {
+          secure: false,
+          httpOnly: false,
+        },
+      })
+    )
+  )
   // api.use(compression)
   api.use((req, res, next) => {
     if (req.originalUrl === '/v0/payment/hook') {
