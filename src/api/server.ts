@@ -84,6 +84,8 @@ export const RESTServer = async () => {
     }
   })
 
+  api.enable('trust proxy')
+
   api.use(bodyParser.urlencoded({extended: false}))
   // api.use(bodyParser.json()) // need this comment out so our stripe integration will work
 
