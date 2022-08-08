@@ -30,7 +30,7 @@ const whitelist = process.env.WHITELIST_CORS!.split(';;')
 // https://github.com/expressjs/session/issues/725
 function when(test: any, a: any, b: any) {
   return (req: any, res: any, next: any) => {
-    console.log('testing protocol', req.protocol)
+    console.log('testing protocol', req.protocol, req.headers['x-forwarded-proto'])
     return (test(req, res) ? a : b)(req, res, next)
   }
 }
@@ -57,7 +57,7 @@ export const RESTServer = async () => {
   api.use(cookieParser())
   api.use(
     when(
-      (req: any) => req.protocol === 'https',
+      (req: any) => req.headers['x-forwarded-proto'] === 'https' || req.protocol === 'https',
       session({
         secret: process.env.SESSION_SECRET!,
         cookie: {
