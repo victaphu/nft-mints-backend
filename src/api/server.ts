@@ -29,8 +29,10 @@ const whitelist = process.env.WHITELIST_CORS!.split(';;')
 
 // https://github.com/expressjs/session/issues/725
 function when(test: any, a: any, b: any) {
-  console.log('session test', test)
-  return (req: any, res: any, next: any) => (test(req, res) ? a : b)(req, res, next)
+  return (req: any, res: any, next: any) => {
+    console.log('testing protocol', req.protocol)
+    return (test(req, res) ? a : b)(req, res, next)
+  }
 }
 
 export const RESTServer = async () => {
