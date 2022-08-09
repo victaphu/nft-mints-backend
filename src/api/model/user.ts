@@ -10,6 +10,7 @@ export default class User {
   public lastSentCode: number = 0
   public userType: UserType = UserType.USER
   public stripeConnected: boolean = false
+  public walletAddress: string = '' // users' wallet address after integrating sms wallet
 
   constructor(uuid: string, phone: string) {
     this.uuid = uuid || User.generateUUID()

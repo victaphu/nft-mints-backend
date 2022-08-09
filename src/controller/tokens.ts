@@ -50,17 +50,13 @@ export async function createCollection(
   maxMint: number | 1,
   ownerUUID: string,
   collectionImage: string | '',
-  tokenType: TokenType = TokenType.COLLECTION,
-  launch: boolean = false
+  tokenType: TokenType = TokenType.COLLECTION
 ) {
   let price = rate
   if (+rate < 1 || !rate) {
     price = 0 // free if < 1
   }
 
-  // if (+rate < 5) {
-  //   throw new Error('Rate must be greater than $5')
-  // }
   console.log(arguments)
   const c = new Collection(
     ownerUUID,
@@ -73,16 +69,14 @@ export async function createCollection(
   c.collectionImage = collectionImage
   c.tokenType = tokenType
 
-  if (launch) {
-    const wallet = new Wallet()
-    const collectionAddress = await wallet.deployCollection(
-      c,
-      'test_symbol',
-      config.web3.factoryContractAddress // TODO: use owner address from session
-    )
+  const wallet = new Wallet()
+  const collectionAddress = await wallet.deployCollection(
+    c,
+    'test_symbol',
+    config.web3.factoryContractAddress // TODO: use owner address from session
+  )
 
-    c.collectionAddress = collectionAddress
-  }
+  c.collectionAddress = collectionAddress
 
   // no productId means product is free
   if (price > 0) {

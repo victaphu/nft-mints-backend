@@ -25,7 +25,7 @@ declare module 'express-session' {
   }
 }
 
-const whitelist = process.env.WHITELIST_CORS!.split(';;')
+const whitelist = config.api.whitelistcors.split(';;')
 
 // https://github.com/expressjs/session/issues/725
 function when(test: any, a: any, b: any) {
@@ -59,7 +59,7 @@ export const RESTServer = async () => {
     when(
       (req: any) => req.headers['x-forwarded-proto'] === 'https' || req.protocol === 'https',
       session({
-        secret: process.env.SESSION_SECRET!,
+        secret: config.api.sessionsecret,
         cookie: {
           secure: true,
           httpOnly: true,
@@ -67,7 +67,7 @@ export const RESTServer = async () => {
         },
       }),
       session({
-        secret: process.env.SESSION_SECRET!,
+        secret: config.api.sessionsecret,
         cookie: {
           secure: false,
           httpOnly: false,

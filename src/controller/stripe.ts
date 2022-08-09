@@ -3,13 +3,13 @@ import Stripe from 'stripe'
 import {v4 as uuidv4} from 'uuid'
 import StripeUser from 'src/api/model/stripe'
 import DbHelper from 'src/api/db-helper'
+import {config} from 'src/config'
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
-const stripeAPIKey = process.env.STRIPE_API_KEY
-const stripeClientId = process.env.STRIPE_CLIENT_ID
-const authorizedRedirect = process.env.STRIPE_AUTH_URL
-const authorizedSuccessUrl = process.env.STRIPE_AUTH_SUCCESS
+const stripeAPIKey = config.stripe.stripeApiKey
+const stripeClientId = config.stripe.stripeClientId
+const authorizedRedirect = config.stripe.stripeAuthUrl
+const authorizedSuccessUrl = config.stripe.stripeAuthSuccess
 
 const stripe = new Stripe(stripeAPIKey!, {
   apiVersion: '2020-08-27',

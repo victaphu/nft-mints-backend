@@ -7,8 +7,9 @@ import {body} from 'express-validator'
 const db = new DbHelper()
 
 const createCollection = async (req: Request, res: Response) => {
-  // TODO: should we have the user here? mobile number + sms code?
-  const {title, description, link, rate, maxMint, collectionImage, tokenType, launch} = req.body
+  const {title, description, link, rate, maxMint, collectionImage, tokenType} = req.body
+
+  // server-side uuid in the session object
   const ownerUUID = req.session.userUuid
 
   if (!ownerUUID) {
@@ -25,8 +26,7 @@ const createCollection = async (req: Request, res: Response) => {
       maxMint,
       ownerUUID!,
       collectionImage,
-      +tokenType,
-      launch
+      +tokenType
     )
   )
 }

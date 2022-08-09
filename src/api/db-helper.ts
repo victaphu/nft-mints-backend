@@ -4,12 +4,13 @@ import Token from './model/token'
 import Collection from 'src/api/model/collection'
 import {UserType} from 'src/types/users'
 import StripeUser from './model/stripe'
+import {config} from 'src/config'
 
 export default class DbHelper {
   private client: MongoClient | undefined
   private db: Db | undefined
-  static URI: string = process.env.MONGO_URI || ''
-  static DB_NAME: string = process.env.MONGO_DATABASE || ''
+  static URI: string = config.mongo.mongoUri || ''
+  static DB_NAME: string = config.mongo.mongoDb || ''
 
   constructor() {
     if (!DbHelper.URI) {
