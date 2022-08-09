@@ -1,37 +1,18 @@
 import {Request} from 'express'
 import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/payments'
 import Stripe from 'stripe'
-import {SMSController, TokenController} from '.'
-// import fetch, {RequestInfo, RequestInit} from 'node-fetch'
+import {TokenController} from '.'
 import axios from 'axios'
-import DbHelper from 'src/api/db-helper'
-import mint from './mint'
-// const fetch = (url: RequestInfo, init?: RequestInit) =>
-// import('node-fetch').then(({default: fetch}) => fetch(url, init))
+import {getStripeObjectByUserUuid} from './stripe'
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
 const stripeAPIKey = process.env.STRIPE_API_KEY
+
 const stripe = new Stripe(stripeAPIKey!, {
   apiVersion: '2020-08-27',
   typescript: true,
 })
-
-// Refactor: move to fetch of api instead of this workaround; having issues with fetch complaining about ES Module
-async function doMint(userUuid: string, token: string) {
-  let conn
-  try {
-    // Refactor: "owner" will likely come from session after authentication is in place
-    conn = await new DbHelper().connect()
-    const owner = await conn.getUserByUUID(userUuid)
-    // Note: changed from token to collection (todo: update accordingly)
-    const collection = await conn.getCollectionByUUID(token)
-    // Todo: handle null case
-    await mint(owner, collection!)
-  } finally {
-    conn?.close()
-  }
-}
 
 export async function checkout({
   tokenId,
@@ -75,19 +56,25 @@ export async function checkoutv2({
   const lineItems: any[] = []
   const freeMints: any[] = []
 
+  let ownerUuid: string | null = null
+
+  if (nfts.length > 1) {
+    throw new Error('multi-minting not supported yet')
+  }
+
   await Promise.all(
     nfts.map(async (nft: NFTInterface) => {
       const internal = await TokenController.getCollectionByUUID(nft.collectionUuid)
       if (internal?.rate === 0) {
         freeMints.push(nft.collectionUuid)
       } else {
+        ownerUuid = internal?.ownerUUID!
         lineItems.push({price: internal?.priceId, quantity: nft.quantity})
       }
-      // const tokens = internal?.tokens
-      //   .filter((t: any) => nft.nftIds!.indexOf(t.tokenId) >= 0)
-      //   .map((t: any) => lineItems.push({price: t.stripePriceId, quantity: 1}))
     })
   )
+
+  // todo: multi mint from multiple users?? do not allow!
 
   console.log(lineItems, freeMints)
 
@@ -106,6 +93,8 @@ export async function checkoutv2({
     // no items to buy from stripe; bail!
     return {url: successUrl}
   }
+
+  const stripe = await getStripeObjectByUserUuid(ownerUuid!)
 
   const session = await stripe.checkout.sessions.create({
     line_items: lineItems,
@@ -142,12 +131,6 @@ export async function handleStripeHook(request: Request) {
         paymentIntent,
         paymentIntent.metadata
       )
-      // await TokenController.mintToken(
-      //   paymentIntent.metadata.mobileNumber,
-      //   paymentIntent.metadata.smsCode,
-      //   ''
-      // )
-
       // on success call the chain-mint api
       console.log(
         axios.get(
