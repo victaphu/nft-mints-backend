@@ -17,6 +17,7 @@ export const config = {
     serverendpoint: process.env.SERVER_ENDPOINT_API!,
     sessionsecret: process.env.SESSION_SECRET!,
     whitelistcors: process.env.WHITELIST_CORS!,
+    callbackVerify: process.env.SMSWALLET_CALLBACK_VERIFY!,
   },
   defaultSignatureValidDuration: 1000 * 60 * 15, // used to sign request
   logger: {

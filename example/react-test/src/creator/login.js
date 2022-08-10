@@ -1,9 +1,17 @@
 // capture mobile and forward to sms wallet
 import {useState} from 'react'
 import {useNavigate} from 'react-router'
+import {Buffer} from 'buffer'
+import {
+  initLogin as commInitLogin,
+  initLogin,
+  logout as commLogout,
+  whoami as commWhoAmI,
+} from './communicator'
 
 const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
 // const GATEWAY = 'http://localhost:3000'
+
 function Login() {
   const [mobileNumber, setMobileNumber] = useState('+6584901105')
   const [connecting, setConnecting] = useState(false)
@@ -14,16 +22,14 @@ function Login() {
       method: 'GET',
       credentials: 'include',
     })
-    setConnecting(false)
-    console.log(res) // session created with registered user
-    window.open(
-      'https://smswallet.xyz',
-      '_blank',
-      'location=yes,height=730,width=400,scrollbars=yes,status=yes'
-    )
 
-    // redirect to stripe
-    navigate('/creator/')
+    // now we get the stuff to sign!
+    const sign = await initLogin({})
+
+    setConnecting(false)
+
+    const params = `callback=${sign.callback}&message=${sign.message}&caller=${sign.caller}`
+    window.location.href = `https://smswallet.xyz/sign?${params}`
   }
 
   return (

@@ -11,6 +11,7 @@ import sms from './smsgateway'
 import token from './token'
 import collection from './collection'
 import user from './user'
+import login from './user/login'
 import mint from './minter'
 import stripe from './stripe'
 
@@ -93,7 +94,7 @@ export const RESTServer = async () => {
   const collectionsRouter = Router({mergeParams: true})
   const collectionsRouterv1 = Router({mergeParams: true})
   const usersRouter = Router({mergeParams: true})
-  const usersRouterv1 = Router({mergeParams: true})
+  const userLogin = Router({mergeParams: true})
   const stripeConnect = Router({mergeParams: true})
 
   api.use('/v0/payment', paymentRouter)
@@ -103,7 +104,7 @@ export const RESTServer = async () => {
   api.use('/v0/collections', collectionsRouter)
   api.use('/v1/collections', collectionsRouterv1)
   api.use('/v0/users', usersRouter)
-  api.use('/v1/users', usersRouterv1)
+  api.use('/v1/login', userLogin)
   api.use('/v0/stripe', stripeConnect)
 
   let server: Server
@@ -117,7 +118,7 @@ export const RESTServer = async () => {
   collection(collectionsRouter)
   collection(collectionsRouterv1, 1)
   user(usersRouter)
-  user(usersRouter, 1)
+  login(userLogin)
   stripe(stripeConnect)
 
   l.info('REST API starting...')
