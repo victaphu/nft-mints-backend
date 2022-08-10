@@ -21,7 +21,7 @@ declare module 'express-session' {
   export interface SessionData {
     state: string // { [key: string]: any };
     userUuid: string
-    counter: number
+    userWallet: string
   }
 }
 
@@ -29,10 +29,7 @@ const whitelist = config.api.whitelistcors.split(';;')
 
 // https://github.com/expressjs/session/issues/725
 function when(test: any, a: any, b: any) {
-  return (req: any, res: any, next: any) => {
-    console.log('testing protocol', req.protocol, req.headers['x-forwarded-proto'])
-    return (test(req, res) ? a : b)(req, res, next)
-  }
+  return (req: any, res: any, next: any) => (test(req, res) ? a : b)(req, res, next)
 }
 
 export const RESTServer = async () => {
@@ -94,6 +91,7 @@ export const RESTServer = async () => {
   const smsRouter = Router({mergeParams: true})
   const tokensRouter = Router({mergeParams: true})
   const collectionsRouter = Router({mergeParams: true})
+  const collectionsRouterv1 = Router({mergeParams: true})
   const usersRouter = Router({mergeParams: true})
   const stripeConnect = Router({mergeParams: true})
 
@@ -102,6 +100,7 @@ export const RESTServer = async () => {
   api.use('/v0/sms', smsRouter)
   api.use('/v0/tokens', tokensRouter)
   api.use('/v0/collections', collectionsRouter)
+  api.use('/v0/collection', collectionsRouterv1)
   api.use('/v0/users', usersRouter)
   api.use('/v0/stripe', stripeConnect)
 
@@ -114,6 +113,7 @@ export const RESTServer = async () => {
   sms(smsRouter)
   token(tokensRouter)
   collection(collectionsRouter)
+  collection(collectionsRouterv1, 1)
   user(usersRouter)
   stripe(stripeConnect)
 

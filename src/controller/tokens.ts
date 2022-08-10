@@ -57,51 +57,65 @@ export async function createCollection(
     price = 0 // free if < 1
   }
 
-  console.log(arguments)
-  const c = new Collection(
-    ownerUUID,
-    title || 'Anonymous Collection',
-    description || '',
-    link || '',
-    price || 0,
-    maxMint || 1
-  )
-  c.collectionImage = collectionImage
-  c.tokenType = tokenType
-
-  const wallet = new Wallet()
-  const collectionAddress = await wallet.deployCollection(
-    c,
-    'test_symbol',
-    config.web3.factoryContractAddress // TODO: use owner address from session
-  )
-
-  c.collectionAddress = collectionAddress
-
-  // no productId means product is free
-  if (price > 0) {
-    const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
-
-    const product = await StripeController.registerProduct(
-      ownerUUID,
-      title || 'Anonymous Collection',
-      description || 'Anonymous Collection',
-      tokenPrice,
-      c.addUUIDStamp(),
-      collectionImage
-    )
-
-    c.productId = product.id
-    // @ts-ignore ignoring since price should be returned as a price object with specific id
-    c.priceId = product.default_price?.id
-  } // no productId means product is free
-
   const db = new DbHelper()
   const con = await db.connect()
-  await con.createCollection(c)
-  await con.close()
 
-  return c
+  try {
+    // if (+rate < 5) {
+    //   throw new Error('Rate must be greater than $5')
+    // }
+    console.log(arguments)
+
+    // get user
+    const user = await con.getUserByUUID(ownerUUID)
+
+    if (user === null || !user.walletAddress) {
+      throw new Error('User does not have a wallet')
+    }
+
+    const c = new Collection(
+      ownerUUID,
+      title || 'Anonymous Collection',
+      description || '',
+      link || '',
+      price || 0,
+      maxMint || 1
+    )
+    c.collectionImage = collectionImage
+    c.tokenType = tokenType
+
+    const wallet = new Wallet()
+    const collectionAddress = await wallet.deployCollection(
+      c,
+      'DJ3N',
+      config.web3.factoryContractAddress // TODO: use owner address from session
+    )
+
+    c.collectionAddress = collectionAddress
+
+    // no productId means product is free
+    if (price > 0) {
+      const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
+
+      const product = await StripeController.registerProduct(
+        ownerUUID,
+        title || 'Anonymous Collection',
+        description || 'Anonymous Collection',
+        tokenPrice,
+        c.addUUIDStamp(),
+        collectionImage
+      )
+
+      c.productId = product.id
+      // @ts-ignore ignoring since price should be returned as a price object with specific id
+      c.priceId = product.default_price?.id
+    } // no productId means product is free
+
+    await con.createCollection(c)
+    return c
+  } finally {
+    await con.close()
+  }
 }
 
 export async function getCollectionByUUID(uuid: string) {

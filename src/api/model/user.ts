@@ -31,10 +31,12 @@ export default class User {
   static fromDatabase(result: any, stripeConnected = false) {
     const u = new User(result.uuid, result.phone)
     u.id = result.id
-    u.pendingCode = result.pendingCode
-    u.codeHash = result.codeHash
+    u.pendingCode = result.pendingCode // should we hide this?
+    u.codeHash = result.codeHash // should we hide this?
     u.userType = result.userType || UserType.USER
     u.stripeConnected = stripeConnected
+    // todo: remove once we have the sms wallet integrated
+    u.walletAddress = result.walletAddress || '0xa3D91cC5cdAacfAB08E4A2Eb34cAc39AA364617f'
     return u
   }
 }

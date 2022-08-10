@@ -18,6 +18,7 @@ export const config = {
     sessionsecret: process.env.SESSION_SECRET!,
     whitelistcors: process.env.WHITELIST_CORS!,
   },
+  defaultSignatureValidDuration: 1000 * 60 * 15, // used to sign request
   logger: {
     levels: {
       console: process.env.STDOUT_LOG_LEVELS
