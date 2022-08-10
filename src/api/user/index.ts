@@ -126,6 +126,9 @@ const walletSignRequest = async (req: Request, res: Response) => {
   const conn = await db.connect()
   try {
     const user = await conn.getUserByUUID(req.session.userUuid)
+    // todo: hey edd this is where the signature happens; i need it to sign in this specific format
+    // because sms wallet lookup function also takes a signature.
+    // when this pops back i will have enough details to verify the signature of the user + their mobile
     user.pendingCode = `${user.phone} ${
       Math.floor(Date.now() / config.defaultSignatureValidDuration) *
       config.defaultSignatureValidDuration
