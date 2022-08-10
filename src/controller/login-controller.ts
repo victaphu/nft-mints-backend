@@ -55,7 +55,6 @@ export default class LoginController {
 
     const params = new URLSearchParams()
     for (const k in obj) {
-      // @ts-ignore
       if (!Object.prototype.hasOwnProperty.call(obj, k)) continue
       params.set(k, obj[k])
     }
