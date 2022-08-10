@@ -7,6 +7,7 @@ import {logger} from 'src/logger'
 import {TokenController} from 'src/controller'
 import Wallet from 'src/api/wallet'
 import DbHelper from 'src/api/db-helper'
+import {config} from 'src/config'
 
 const l = logger(module)
 
@@ -86,7 +87,7 @@ const getMetadata = async (req: Request, res: Response) => {
     const meta = {
       name: collection.title,
       description: collection.description,
-      external_url: `${process.env.FRONTEND_URI}/item/${token.uuid}`,
+      external_url: `${config.api.frontendurl}/item/${token.uuid}`,
       image: collection.collectionImage,
       attributes: [],
     }

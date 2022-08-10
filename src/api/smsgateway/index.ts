@@ -1,10 +1,9 @@
 import {Request, Response, Router} from 'express'
 import Twilio from 'twilio'
 import {SMSController} from 'src/controller'
+import {config} from 'src/config'
 
-const accountId = process.env.TWILIO_ACCOUNT_ID
-const authToken = process.env.TWILIO_AUTH_TOKEN
-const fromPhone = process.env.TWILIO_FROM_PHONE
+const {accountId, authToken, fromPhone} = config.sms
 const twilioClient = Twilio(accountId, authToken)
 
 const sendVerificationMessage = async (request: Request, response: Response) => {
