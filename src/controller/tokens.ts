@@ -1,3 +1,4 @@
+import {ethers} from 'ethers'
 import DbHelper from 'src/api/db-helper'
 import Collection from 'src/api/model/collection'
 import Token from 'src/api/model/token'
@@ -50,7 +51,11 @@ export async function createCollection(
   maxMint: number | 1,
   ownerUUID: string,
   collectionImage: string | '',
-  tokenType: TokenType = TokenType.COLLECTION
+  tokenType: TokenType = TokenType.COLLECTION,
+  perks: string | '',
+  creatorRoyalty: number | 0,
+  additionalDetails: string | '',
+  properties: object | {}
 ) {
   let price = rate
   if (+rate < 1 || !rate) {
@@ -73,6 +78,10 @@ export async function createCollection(
       throw new Error('User does not have a wallet')
     }
 
+    if (!ethers.utils.isAddress(user.walletAddress)) {
+      throw new Error('misconfigured, user wallet address is not valid')
+    }
+
     const c = new Collection(
       ownerUUID,
       title || 'Anonymous Collection',
@@ -83,12 +92,16 @@ export async function createCollection(
     )
     c.collectionImage = collectionImage
     c.tokenType = tokenType
+    c.perks = perks
+    c.creatorRoyalties = creatorRoyalty
+    c.additionalDetails = additionalDetails
+    c.properties = properties
 
     const wallet = new Wallet()
     const collectionAddress = await wallet.deployCollection(
       c,
       'DJ3N',
-      config.web3.factoryContractAddress // TODO: use owner address from session
+      user.walletAddress // TODO: use owner address from session
     )
 
     c.collectionAddress = collectionAddress

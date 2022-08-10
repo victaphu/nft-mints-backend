@@ -93,6 +93,7 @@ export const RESTServer = async () => {
   const collectionsRouter = Router({mergeParams: true})
   const collectionsRouterv1 = Router({mergeParams: true})
   const usersRouter = Router({mergeParams: true})
+  const usersRouterv1 = Router({mergeParams: true})
   const stripeConnect = Router({mergeParams: true})
 
   api.use('/v0/payment', paymentRouter)
@@ -100,8 +101,9 @@ export const RESTServer = async () => {
   api.use('/v0/sms', smsRouter)
   api.use('/v0/tokens', tokensRouter)
   api.use('/v0/collections', collectionsRouter)
-  api.use('/v0/collection', collectionsRouterv1)
+  api.use('/v1/collections', collectionsRouterv1)
   api.use('/v0/users', usersRouter)
+  api.use('/v1/users', usersRouterv1)
   api.use('/v0/stripe', stripeConnect)
 
   let server: Server
@@ -115,6 +117,7 @@ export const RESTServer = async () => {
   collection(collectionsRouter)
   collection(collectionsRouterv1, 1)
   user(usersRouter)
+  user(usersRouter, 1)
   stripe(stripeConnect)
 
   l.info('REST API starting...')

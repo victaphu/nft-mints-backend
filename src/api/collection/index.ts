@@ -11,7 +11,7 @@ const createCollection = async (req: Request, res: Response) => {
   const {title, description, link, rate, maxMint, collectionImage, tokenType} = req.body
 
   // v1 properties
-  const {perk, creatorRoyalty, additionalDetails, properties} = req.body
+  const {perks, creatorRoyalty, additionalDetails, properties} = req.body
 
   const ownerUUID = req.session.userUuid
 
@@ -29,7 +29,11 @@ const createCollection = async (req: Request, res: Response) => {
       maxMint,
       ownerUUID!,
       collectionImage,
-      +tokenType
+      +tokenType,
+      perks,
+      creatorRoyalty,
+      additionalDetails,
+      properties
     )
   )
 }
