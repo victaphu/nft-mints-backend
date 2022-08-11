@@ -1,6 +1,6 @@
 // capture mobile and forward to sms wallet
 import {useState} from 'react'
-import {initLogin, initLogin} from './communicator'
+import {initLogin} from './communicator'
 
 const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
 // const GATEWAY = 'http://localhost:3000'
