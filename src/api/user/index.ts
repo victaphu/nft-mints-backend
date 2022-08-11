@@ -4,8 +4,6 @@ import DbHelper from 'src/api/db-helper'
 import {body} from 'express-validator'
 import User from 'src/api/model/user'
 import {errorToObject} from '../transport'
-import {ethers} from 'ethers'
-import {config} from 'src/config'
 
 // TODO: Safely close connection
 // todo: refactor this code to use controller
@@ -16,7 +14,7 @@ const db = new DbHelper()
 const createUser = async (req: Request, res: Response) => {
   const {phone} = req.body
   const user = new User(User.generateUUID(), phone)
-  const conn = await db.connect()
+  const conn = await new DbHelper().connect()
 
   try {
     await conn.createUser(user)
@@ -30,7 +28,7 @@ const createUser = async (req: Request, res: Response) => {
 const getUser = async (req: Request, res: Response) => {
   const uuid = req.params.uuid
 
-  const conn = await db.connect()
+  const conn = await new DbHelper().connect()
   try {
     req.session.userUuid = uuid // connect user
     return res.json(await conn.getUserByUUID(uuid))
@@ -45,7 +43,7 @@ const getUser = async (req: Request, res: Response) => {
 const getUserBySession = async (req: Request, res: Response) => {
   const uuid = req.session.userUuid!
 
-  const conn = await db.connect()
+  const conn = await new DbHelper().connect()
   try {
     return res.json(await conn.getUserByUUID(uuid))
   } catch (err) {
@@ -59,7 +57,7 @@ const getUserBySession = async (req: Request, res: Response) => {
 const getUserByPhone = async (req: Request, res: Response) => {
   const phone = req.params.phone
 
-  const conn = await db.connect()
+  const conn = await new DbHelper().connect()
   try {
     const user = await conn.getUserByPhone(phone)
     req.session.userUuid = user?.uuid // connect user

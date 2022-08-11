@@ -45,15 +45,14 @@ const getController = (user: User, conn: DbHelper) => {
 }
 
 const walletVerify = async (req: Request, res: Response) => {
-  const {signature, messageHash, address, error, cancelled} = req.body
-  if (!req.session.userUuid) {
-    res.status(400).send({message: 'user not logged in'})
-    return
-  }
+  const {signature, messageHash, address, error, cancelled, phone} = req.body
 
   const conn = await new DbHelper().connect()
   try {
-    const user = await conn.getUserByUUID(req.session.userUuid)
+    const user = await conn.getUserByPhone(phone)
+    if (!user) {
+      throw new Error(`user not found with phone ${phone}`)
+    }
     const controller = getController(user, conn)
 
     console.log(messageHash, user.codeHash)
@@ -90,23 +89,29 @@ const walletVerify = async (req: Request, res: Response) => {
   }
 }
 
+// unpriviledged path
 const walletSignRequest = async (req: Request, res: Response) => {
   const callbackUrl = config.api.callbackVerify
   const redirectPostLogin = req.body.redirect
+  const phone = req.body.phone
 
-  if (!req.session.userUuid) {
-    res.status(400).send({message: 'user not logged in'})
-    return
-  }
+  // todo: if the user is logged in and already has an account; we should
+  // reject this request? or should we update the users' wallet address?
 
   const conn = await new DbHelper().connect()
   try {
-    const user = await conn.getUserByUUID(req.session.userUuid)
+    let user = await conn.getUserByPhone(phone)
+    if (!user) {
+      user = new User(User.generateUUID(), phone)
+      await conn.createUser(user)
+      user = await conn.getUserByUUID(user.uuid)
+    }
     const controller = getController(user, conn)
     const result = await controller.initLogin({
       callbackUrl,
       callbackParams: redirectPostLogin ? {redirect: redirectPostLogin} : null,
     })
+
     return res.json(result)
   } catch (err) {
     console.log(err)

@@ -35,8 +35,7 @@ export default class User {
     u.codeHash = result.codeHash // should we hide this?
     u.userType = result.userType || UserType.USER
     u.stripeConnected = stripeConnected
-    // todo: remove once we have the sms wallet integrated
-    u.walletAddress = result.walletAddress || '0xa3D91cC5cdAacfAB08E4A2Eb34cAc39AA364617f'
+    u.walletAddress = result.walletAddress
     return u
   }
 }

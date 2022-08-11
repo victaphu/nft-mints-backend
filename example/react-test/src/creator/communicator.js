@@ -5,16 +5,16 @@ const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
 // const GATEWAY = 'http://localhost:3000'
 const API_URI = GATEWAY
 
-export async function initLogin({redirect}) {
-  const r = await privilegedAxios.post(`${API_URI}/v1/login/init`, {redirect})
+export async function initLogin({phone, redirect}) {
+  const r = await axios.post(`${API_URI}/v1/login/init`, {phone, redirect})
   if (r.status !== 200) {
     throw new CommunicatorError('ERR_UNKNOWN', JSON.stringify(r.data))
   }
   return r.data
 }
 
-export async function verifyLogin({signature, messageHash, address, error, cancelled}) {
-  const data = {signature, messageHash, address, error, cancelled}
+export async function verifyLogin({signature, messageHash, address, error, cancelled, phone}) {
+  const data = {signature, messageHash, address, error, cancelled, phone}
 
   const r = await privilegedAxios.post(`${API_URI}/v1/login/verify`, data)
   if (r.status === 403) {

@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useState} from 'react'
 import axios from 'axios'
-import {useNavigate, useParams} from 'react-router'
+import {useNavigate} from 'react-router'
 import {useLocation} from 'react-router-dom'
 
 const GATEWAY = 'https://smsnftgateway2.herokuapp.com'

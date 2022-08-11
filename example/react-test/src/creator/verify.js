@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import {verifyLogin} from './communicator'
 
 export default function Verify() {
-  const [isPending, setIsPending] = useState(true)
+  const [, setIsPending] = useState(true)
   const [message, setMessage] = useState('')
   const [redirectUri, setRedirectUri] = useState('')
 
@@ -18,7 +18,8 @@ export default function Verify() {
     const redirect = params.get('redirect')
     if (redirect) setRedirectUri(redirect)
 
-    verifyLogin({signature, messageHash, address, error, cancelled})
+    const phone = window.localStorage.getItem('phone')
+    verifyLogin({signature, messageHash, address, error, cancelled, phone})
       .then((isSuccess) => {
         setMessage(
           `Your information has been verified. Redirecting to ${
@@ -32,7 +33,7 @@ export default function Verify() {
         setMessage('An error has occurred, check the console for details.')
       })
       .finally(() => setIsPending(false))
-  }, [setIsPending, setRedirectUri, setIsPending])
+  }, [setIsPending, setRedirectUri])
 
   function doRedirect(uri) {
     window.location.href = uri || '/creator/'
