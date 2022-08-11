@@ -3,8 +3,8 @@ import axios from 'axios'
 import {useNavigate} from 'react-router'
 import {useLocation} from 'react-router-dom'
 
-const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
-// const GATEWAY = 'http://localhost:3000'
+// const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
+const GATEWAY = 'http://localhost:3000'
 
 // todo: short cut at the moment
 // it just grabs all the collections and the front end apply filter on type
@@ -74,7 +74,7 @@ function Gallery() {
   }, [filters, page, navigate])
 
   async function logout() {
-    await fetch(`${GATEWAY}/v0/users/logout`)
+    await fetch(`${GATEWAY}/v1/login/logout`)
     navigate('/creator/login')
   }
 
