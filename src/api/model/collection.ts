@@ -14,7 +14,14 @@ export default class Collection {
   public productId: string | undefined // stripe product id; only valid if the token rate > 0
   public priceId: string | undefined // strip price id; only valid if the token rate > 0
   public collectionImage: string | undefined
+  public collectionImages: [] | undefined
   public tokenType: TokenType = TokenType.COLLECTION // token type, airdrop / collection / access pass
+
+  // properties for v1
+  public properties: object = {}
+  public perks: string = ''
+  public additionalDetails: string = ''
+  public creatorRoyalties: number = 0
 
   constructor(
     _ownerUUID: string,
@@ -58,6 +65,12 @@ export default class Collection {
     t.collectionImage =
       result.collectionImage ||
       'https://ipfs.io/ipfs/QmNf1UsmdGaMbpatQ6toXSkzDpizaGmC9zfunCyoz1enD5/penguin/1.png'
+
+    // v1 config
+    t.properties = result.properties || {}
+    t.perks = result.perks
+    t.additionalDetails = result.additionalDetails
+    t.creatorRoyalties = result.creatorRoyalties
     return t
   }
 }

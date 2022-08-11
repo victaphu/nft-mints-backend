@@ -72,7 +72,7 @@ const getSequenceIdFromMintID = async (req: Request, res: Response) => {
   res.json({contract, mintId, sequence})
 }
 
-const init = (app: Router) => {
+const init = (app: Router, version: number = 0) => {
   l.info('Initialise minter endpoints')
   app.get('/chain-mint/:owner/:collection', doMint)
   app.get('/claim/init/:owner', initClaim)

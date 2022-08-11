@@ -1,13 +1,21 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import axios from 'axios'
-import {useNavigate, useParams} from 'react-router'
+import {useNavigate} from 'react-router'
+import {useLocation} from 'react-router-dom'
 
 const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
+// const GATEWAY = 'http://localhost:3000'
 
 // todo: short cut at the moment
 // it just grabs all the collections and the front end apply filter on type
 // future will be more complex api
 const selected = ['Access Pass', 'Air drop', 'Collections']
+
+function useQuery() {
+  const {search} = useLocation()
+
+  return useMemo(() => new URLSearchParams(search), [search])
+}
 
 function Gallery() {
   const navigate = useNavigate()
@@ -18,9 +26,30 @@ function Gallery() {
   const [userDetails, setUserDetails] = useState({})
   const [selectedNfts, setSelectedNfts] = useState([])
 
-  const params = useParams()
-
+  const search = useQuery()
   const [view, setView] = useState(3) // 3 = collections, 2 = air drop, 1 = access pass
+
+  useEffect(() => {
+    console.log('updating', search)
+    if (search.get('signature') && search.get('address') && search.get('messageHash')) {
+      // call server to register!
+      // axios.get(`${GATEWAY}/v1/users/wallet-verify`, {})
+      fetch(`${GATEWAY}/v1/users/wallet-verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          signature: search.get('signature'),
+          address: search.get('address'),
+          messageHash: search.get('messageHash'),
+        }),
+      })
+        .then((result) => console.log(result))
+        .catch(console.error)
+    }
+  }, [search])
 
   // get list of nfts
   useEffect(() => {
@@ -42,7 +71,12 @@ function Gallery() {
         // redirect creator to login
         navigate('/creator/login')
       })
-  }, [filters, page, params.collectionUuid, navigate])
+  }, [filters, page, navigate])
+
+  async function logout() {
+    await fetch(`${GATEWAY}/v0/users/logout`)
+    navigate('/creator/login')
+  }
 
   function toggleTokenSelection(token, value) {
     if (selectedNfts.find((t) => t.uuid === token.uuid)) {
@@ -137,6 +171,7 @@ function Gallery() {
         Airdrops
       </button>
       <button onClick={(e) => navigate('/creator/create')}>Create</button>
+      <button onClick={logout}>Logout</button>
 
       {nfts.length > 0 && (
         <div>

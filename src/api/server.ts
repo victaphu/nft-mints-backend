@@ -11,6 +11,7 @@ import sms from './smsgateway'
 import token from './token'
 import collection from './collection'
 import user from './user'
+import login from './user/login'
 import mint from './minter'
 import stripe from './stripe'
 
@@ -21,18 +22,15 @@ declare module 'express-session' {
   export interface SessionData {
     state: string // { [key: string]: any };
     userUuid: string
-    counter: number
+    userWallet: string
   }
 }
 
-const whitelist = process.env.WHITELIST_CORS!.split(';;')
+const whitelist = config.api.whitelistcors.split(';;')
 
 // https://github.com/expressjs/session/issues/725
 function when(test: any, a: any, b: any) {
-  return (req: any, res: any, next: any) => {
-    console.log('testing protocol', req.protocol, req.headers['x-forwarded-proto'])
-    return (test(req, res) ? a : b)(req, res, next)
-  }
+  return (req: any, res: any, next: any) => (test(req, res) ? a : b)(req, res, next)
 }
 
 export const RESTServer = async () => {
@@ -59,7 +57,7 @@ export const RESTServer = async () => {
     when(
       (req: any) => req.headers['x-forwarded-proto'] === 'https' || req.protocol === 'https',
       session({
-        secret: process.env.SESSION_SECRET!,
+        secret: config.api.sessionsecret,
         cookie: {
           secure: true,
           httpOnly: true,
@@ -67,7 +65,7 @@ export const RESTServer = async () => {
         },
       }),
       session({
-        secret: process.env.SESSION_SECRET!,
+        secret: config.api.sessionsecret,
         cookie: {
           secure: false,
           httpOnly: false,
@@ -94,7 +92,9 @@ export const RESTServer = async () => {
   const smsRouter = Router({mergeParams: true})
   const tokensRouter = Router({mergeParams: true})
   const collectionsRouter = Router({mergeParams: true})
+  const collectionsRouterv1 = Router({mergeParams: true})
   const usersRouter = Router({mergeParams: true})
+  const userLogin = Router({mergeParams: true})
   const stripeConnect = Router({mergeParams: true})
 
   api.use('/v0/payment', paymentRouter)
@@ -102,7 +102,9 @@ export const RESTServer = async () => {
   api.use('/v0/sms', smsRouter)
   api.use('/v0/tokens', tokensRouter)
   api.use('/v0/collections', collectionsRouter)
+  api.use('/v1/collections', collectionsRouterv1)
   api.use('/v0/users', usersRouter)
+  api.use('/v1/login', userLogin)
   api.use('/v0/stripe', stripeConnect)
 
   let server: Server
@@ -114,7 +116,9 @@ export const RESTServer = async () => {
   sms(smsRouter)
   token(tokensRouter)
   collection(collectionsRouter)
+  collection(collectionsRouterv1, 1)
   user(usersRouter)
+  login(userLogin)
   stripe(stripeConnect)
 
   l.info('REST API starting...')

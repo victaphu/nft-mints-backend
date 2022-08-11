@@ -2,9 +2,10 @@ import {Request, Response, Router} from 'express'
 import {logger} from 'src/logger'
 import {StripeController} from 'src/controller'
 import {errorToObject} from '../transport'
+import {config} from 'src/config'
 
 const l = logger(module)
-const redirectFailedAuth = process.env.STRIPE_AUTH_FAILURE
+const redirectFailedAuth = config.stripe.stripeAuthFail
 
 const getOAUTHLink = async (request: Request, response: Response) => {
   try {

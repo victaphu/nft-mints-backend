@@ -10,6 +10,7 @@ export default class User {
   public lastSentCode: number = 0
   public userType: UserType = UserType.USER
   public stripeConnected: boolean = false
+  public walletAddress: string = '' // users' wallet address after integrating sms wallet
 
   constructor(uuid: string, phone: string) {
     this.uuid = uuid || User.generateUUID()
@@ -30,10 +31,11 @@ export default class User {
   static fromDatabase(result: any, stripeConnected = false) {
     const u = new User(result.uuid, result.phone)
     u.id = result.id
-    u.pendingCode = result.pendingCode
-    u.codeHash = result.codeHash
+    u.pendingCode = result.pendingCode // should we hide this?
+    u.codeHash = result.codeHash // should we hide this?
     u.userType = result.userType || UserType.USER
     u.stripeConnected = stripeConnected
+    u.walletAddress = result.walletAddress
     return u
   }
 }

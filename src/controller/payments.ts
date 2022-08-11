@@ -4,10 +4,11 @@ import Stripe from 'stripe'
 import {TokenController} from '.'
 import axios from 'axios'
 import {getStripeObjectByUserUuid} from './stripe'
+import {config} from 'src/config'
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET
-const stripeAPIKey = process.env.STRIPE_API_KEY
+const endpointSecret = config.stripe.stripeEndpointSecret
+const stripeAPIKey = config.stripe.stripeApiKey
 
 const stripe = new Stripe(stripeAPIKey!, {
   apiVersion: '2020-08-27',
@@ -82,7 +83,7 @@ export async function checkoutv2({
     // mint free tokens for the user!
     // todo: allow more than one minting
     const response = await axios.get(
-      `${process.env.SERVER_ENDPOINT_API}/v0/minter/chain-mint/${userId}/${freeMints[0]}`
+      `${config.api.serverendpoint}/v0/minter/chain-mint/${userId}/${freeMints[0]}`
     )
 
     const token = response.data
@@ -134,7 +135,7 @@ export async function handleStripeHook(request: Request) {
       // on success call the chain-mint api
       console.log(
         axios.get(
-          `${process.env.SERVER_ENDPOINT_API}/v0/minter/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
+          `${config.api.serverendpoint}/v0/minter/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
         )
       )
       // doMint(paymentIntent.metadata.userId, nfts[0].collectionUuid)

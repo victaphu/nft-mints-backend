@@ -3,10 +3,9 @@ import Twilio from 'twilio'
 import crypto from 'crypto'
 import User from 'src/api/model/user'
 import Token from 'src/api/model/token'
+import {config} from 'src/config'
 
-const accountId = process.env.TWILIO_ACCOUNT_ID
-const authToken = process.env.TWILIO_AUTH_TOKEN
-const fromPhone = process.env.TWILIO_FROM_PHONE
+const {accountId, authToken, fromPhone} = config.sms
 const twilioClient = Twilio(accountId, authToken)
 
 export async function sendSMS(destination: string, content: string) {
@@ -47,7 +46,7 @@ export async function verifySMSCode(destination: string, code: string) {
 export async function sendPostMintMessage(owner: User, token: Token) {
   sendSMS(
     owner.phone,
-    `Congratulations! Your Collectible is ready! Go ahead, take a look. ${process.env.FRONTEND_URI}/collectionable/${token.uuid}`
+    `Congratulations! Your Collectible is ready! Go ahead, take a look. ${config.api.frontendurl}/collectionable/${token.uuid}`
   )
 }
 

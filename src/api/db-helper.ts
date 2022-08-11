@@ -4,12 +4,13 @@ import Token from './model/token'
 import Collection from 'src/api/model/collection'
 import {UserType} from 'src/types/users'
 import StripeUser from './model/stripe'
+import {config} from 'src/config'
 
 export default class DbHelper {
   private client: MongoClient | undefined
   private db: Db | undefined
-  static URI: string = process.env.MONGO_URI || ''
-  static DB_NAME: string = process.env.MONGO_DATABASE || ''
+  static URI: string = config.mongo.mongoUri || ''
+  static DB_NAME: string = config.mongo.mongoDb || ''
 
   constructor() {
     if (!DbHelper.URI) {
@@ -226,7 +227,6 @@ export default class DbHelper {
 
     const collections: Collection[] = []
     const resultArray = await result.toArray()
-    console.log('result is', resultArray, filter)
 
     resultArray.forEach((r) => {
       collections.push(Collection.fromDatabase(r))
@@ -237,7 +237,6 @@ export default class DbHelper {
   async getCollectionByOwnerUUID(ownerUuid: string) {
     const mongoCollection = 'collections'
     const result = await this.db?.collection(mongoCollection).findOne({ownerUuid})
-    console.log('Result is', result, ownerUuid)
     if (!result) return null
     return Collection.fromDatabase(result)
   }
@@ -245,7 +244,6 @@ export default class DbHelper {
   async getCollectionByUUID(uuid: string) {
     const mongoCollection = 'collections'
     const result = await this.db?.collection(mongoCollection).findOne({uuid: uuid})
-    console.log('Result is', result, uuid)
     if (!result) return null
     return Collection.fromDatabase(result)
   }

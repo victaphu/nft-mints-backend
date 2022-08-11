@@ -6,6 +6,7 @@ import Login from './creator/login'
 import Connect from './creator/connect'
 import Gallery from './creator/gallery'
 import CreateCollection from './creator/createcollection'
+import Verify from './creator/verify'
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/creator/connect" element={<Connect />}></Route>
           <Route path="/creator/register" element={<Register />}></Route>
           <Route path="/creator/create" element={<CreateCollection />}></Route>
+          <Route path="/creator/verify" element={<Verify />}></Route>
         </Routes>
       </div>
     </Router>
