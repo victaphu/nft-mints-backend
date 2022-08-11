@@ -9,7 +9,7 @@ export interface LoginArgs {
 
 export interface LoginInit {
   callbackUrl: string
-  callbackParams: any
+  callbackParams?: any
 }
 
 export interface LoginVerify {

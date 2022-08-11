@@ -108,8 +108,7 @@ const walletSignRequest = async (req: Request, res: Response) => {
     }
     const controller = getController(user, conn)
     const result = await controller.initLogin({
-      callbackUrl,
-      callbackParams: redirectPostLogin ? {redirect: redirectPostLogin} : null,
+      callbackUrl: redirectPostLogin || callbackUrl,
     })
 
     return res.json(result)
