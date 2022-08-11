@@ -2,7 +2,7 @@
 import {useState} from 'react'
 import {initLogin} from './communicator'
 
-const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
+// const GATEWAY = 'https://smsnftgateway2.herokuapp.com'
 // const GATEWAY = 'http://localhost:3000'
 
 function Login() {
