@@ -16,6 +16,7 @@ export default class User {
   public publicLink: string = ''
   public profileImage: string = ''
   public profileImageBg: string = ''
+  public description: string = ''
 
   constructor(uuid: string, phone: string) {
     this.uuid = uuid || User.generateUUID()
@@ -45,6 +46,7 @@ export default class User {
     u.publicLink = result.publicLink
     u.profileImage = result.profileImage
     u.profileImageBg = result.profileImageBg
+    u.description = result.description
     return u
   }
 }
