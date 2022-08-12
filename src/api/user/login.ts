@@ -1,6 +1,7 @@
 import {Request, Response, Router} from 'express'
 import {config} from 'src/config'
 import LoginController from 'src/controller/login-controller'
+import {UserType} from 'src/types/users'
 import Web3 from 'web3'
 import DbHelper from '../db-helper'
 import User from '../model/user'
@@ -45,7 +46,7 @@ const getController = (user: User, conn: DbHelper) => {
 }
 
 const walletVerify = async (req: Request, res: Response) => {
-  const {signature, messageHash, address, error, cancelled, phone} = req.body
+  const {signature, messageHash, address, error, cancelled, phone, userType} = req.body
 
   const conn = await new DbHelper().connect()
   try {
@@ -78,6 +79,7 @@ const walletVerify = async (req: Request, res: Response) => {
     req.session.userWallet = address
 
     user.walletAddress = address
+    user.userType = userType || UserType.CREATOR
     await conn.updateUser(user)
 
     return res.json(user)

@@ -26,7 +26,7 @@ const createUser = async (req: Request, res: Response) => {
 }
 
 const updateUser = async (req: Request, res: Response) => {
-  const {name, publicLink, profileImage, profileImageBg} = req.body
+  const {name, publicLink, profileImage, profileImageBg, userType} = req.body
   if (!req.session.userUuid) {
     throw new Error('user not logged in')
   }
@@ -38,7 +38,9 @@ const updateUser = async (req: Request, res: Response) => {
     user.profileImage = profileImage
     user.profileImageBg = profileImageBg
     user.name = name
-
+    if (userType) {
+      user.userType = userType
+    }
     await conn.updateUser(user)
 
     return res.json(user)
