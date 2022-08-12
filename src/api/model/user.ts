@@ -12,6 +12,11 @@ export default class User {
   public stripeConnected: boolean = false
   public walletAddress: string = '' // users' wallet address after integrating sms wallet
 
+  public name: string = ''
+  public publicLink: string = ''
+  public profileImage: string = ''
+  public profileImageBg: string = ''
+
   constructor(uuid: string, phone: string) {
     this.uuid = uuid || User.generateUUID()
     this.phone = phone
@@ -36,6 +41,10 @@ export default class User {
     u.userType = result.userType || UserType.USER
     u.stripeConnected = stripeConnected
     u.walletAddress = result.walletAddress
+    u.name = result.name
+    u.publicLink = result.publicLink
+    u.profileImage = result.profileImage
+    u.profileImageBg = result.profileImageBg
     return u
   }
 }

@@ -25,6 +25,31 @@ const createUser = async (req: Request, res: Response) => {
   }
 }
 
+const updateUser = async (req: Request, res: Response) => {
+  const {name, publicLink, profileImage, profileImageBg} = req.body
+  if (!req.session.userUuid) {
+    throw new Error('user not logged in')
+  }
+
+  const conn = await new DbHelper().connect()
+  try {
+    const user = await conn.getUserByUUID(req.session.userUuid)
+    user.publicLink = publicLink
+    user.profileImage = profileImage
+    user.profileImageBg = profileImageBg
+    user.name = name
+
+    await conn.updateUser(user)
+
+    return res.json(user)
+  } catch (err) {
+    console.log(err)
+    res.status(400).send(errorToObject(err))
+  } finally {
+    conn.close()
+  }
+}
+
 const getUser = async (req: Request, res: Response) => {
   const uuid = req.params.uuid
 
@@ -72,6 +97,7 @@ const getUserByPhone = async (req: Request, res: Response) => {
 
 const init = (app: Router, version = 0) => {
   app.post('/', body('phone').isString().isLength({min: 10}), createUser)
+  app.put('/', updateUser)
   app.get('/whoami', getUserBySession)
   app.get('/:uuid', getUser)
   app.get('/phone/:phone', getUserByPhone)

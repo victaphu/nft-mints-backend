@@ -11,7 +11,7 @@ const createCollection = async (req: Request, res: Response) => {
   const {title, description, link, rate, maxMint, collectionImage, tokenType} = req.body
 
   // v1 properties
-  const {perks, creatorRoyalty, additionalDetails, properties} = req.body
+  const {perks, creatorRoyalty, additionalDetails, properties, collectionImages} = req.body
 
   const ownerUUID = req.session.userUuid
 
@@ -21,20 +21,21 @@ const createCollection = async (req: Request, res: Response) => {
   }
 
   res.json(
-    await TokenController.createCollection(
+    await TokenController.createCollection({
       title,
       description,
       link,
       rate,
       maxMint,
-      ownerUUID!,
+      ownerUUID: ownerUUID!,
       collectionImage,
-      +tokenType,
+      collectionImages,
+      tokenType: +tokenType,
       perks,
       creatorRoyalty,
       additionalDetails,
-      properties
-    )
+      properties,
+    })
   )
 }
 

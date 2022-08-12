@@ -14,7 +14,7 @@ export default class Collection {
   public productId: string | undefined // stripe product id; only valid if the token rate > 0
   public priceId: string | undefined // strip price id; only valid if the token rate > 0
   public collectionImage: string | undefined
-  public collectionImages: [] | undefined
+  public collectionImages: string[] | undefined
   public tokenType: TokenType = TokenType.COLLECTION // token type, airdrop / collection / access pass
 
   // properties for v1
@@ -66,6 +66,7 @@ export default class Collection {
       result.collectionImage ||
       'https://ipfs.io/ipfs/QmNf1UsmdGaMbpatQ6toXSkzDpizaGmC9zfunCyoz1enD5/penguin/1.png'
 
+    t.collectionImages = result.collectionImages || [t.collectionImage]
     // v1 config
     t.properties = result.properties || {}
     t.perks = result.perks

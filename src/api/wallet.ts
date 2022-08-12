@@ -23,6 +23,10 @@ export default class Wallet {
     this.wallet = new ethers.Wallet(privateKey, this.provider)
   }
 
+  getPublicKey(): Promise<string> {
+    return this.wallet.getAddress()
+  }
+
   async transferToken(token: Token, destination: string, verificationCode: string) {
     if (token.isClaimed) throw new Error('Token has already been claimed')
 

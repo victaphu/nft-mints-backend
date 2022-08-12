@@ -4,7 +4,7 @@ import Collection from 'src/api/model/collection'
 import Token from 'src/api/model/token'
 import Wallet from 'src/api/wallet'
 import dataObj from 'src/store/mock'
-import {TokenType} from 'src/types/tokens'
+import {CollectionCreate, TokenType} from 'src/types/tokens'
 import {StripeController} from '.'
 import {config} from '../config'
 
@@ -43,20 +43,21 @@ export async function fetchTokens() {
   return dataObj
 }
 
-export async function createCollection(
-  title: string | 'Anonymous Collection',
-  description: string | '',
-  link: string | '',
-  rate: number | 0,
-  maxMint: number | 1,
-  ownerUUID: string,
-  collectionImage: string | '',
-  tokenType: TokenType = TokenType.COLLECTION,
-  perks: string | '',
-  creatorRoyalty: number | 0,
-  additionalDetails: string | '',
-  properties: object | {}
-) {
+export async function createCollection({
+  title,
+  description,
+  link,
+  rate,
+  maxMint,
+  ownerUUID,
+  collectionImage,
+  collectionImages,
+  tokenType,
+  perks,
+  creatorRoyalty,
+  additionalDetails,
+  properties,
+}: CollectionCreate) {
   let price = rate
   if (+rate < 1 || !rate) {
     price = 0 // free if < 1
@@ -91,6 +92,7 @@ export async function createCollection(
       maxMint || 1
     )
     c.collectionImage = collectionImage
+    c.collectionImages = collectionImages || [collectionImage]
     c.tokenType = tokenType
     c.perks = perks
     c.creatorRoyalties = creatorRoyalty
@@ -101,7 +103,8 @@ export async function createCollection(
     const collectionAddress = await wallet.deployCollection(
       c,
       'DJ3N',
-      user.walletAddress // TODO: use owner address from session
+      await wallet.getPublicKey()
+      // user.walletAddress
     )
 
     c.collectionAddress = collectionAddress
