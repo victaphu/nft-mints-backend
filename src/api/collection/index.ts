@@ -56,7 +56,9 @@ const getUserDetailsWithCollections = async (req: Request, res: Response) => {
   if (!req.session.userUuid) {
     return res.status(400).send({message: 'Login as creator first'})
   }
-  return res.json(await TokenController.getUserDetailsWithCollections(req.session.userUuid!))
+  const data = await TokenController.getUserDetailsWithCollections(req.session.userUuid!)
+  data.collections = data.collections?.filter((e) => e.tokenType) || []
+  return res.json(data.collections)
 }
 
 const getCollections = async (req: Request, res: Response) => {
