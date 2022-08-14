@@ -113,18 +113,26 @@ export async function createCollection({
     if (price > 0) {
       const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
 
-      const product = await StripeController.registerProduct(
-        ownerUUID,
-        title || 'Anonymous Collection',
-        description || 'Anonymous Collection',
-        tokenPrice,
-        c.addUUIDStamp(),
-        collectionImage
-      )
+      const user = await con.getStripeUser(ownerUUID)
 
-      c.productId = product.id
-      // @ts-ignore ignoring since price should be returned as a price object with specific id
-      c.priceId = product.default_price?.id
+      if (user) {
+        // user exists lets create a stripe product
+        const product = await StripeController.registerProduct(
+          ownerUUID,
+          title || 'Anonymous Collection',
+          description || 'Anonymous Collection',
+          tokenPrice,
+          c.addUUIDStamp(),
+          collectionImage
+        )
+
+        c.productId = product.id
+        // @ts-ignore ignoring since price should be returned as a price object with specific id
+        c.priceId = product.default_price?.id
+      } else {
+        // otherwise maybe we should flag this as stripe not ready?
+        console.log('stripe is not connected for this user')
+      }
     } // no productId means product is free
 
     await con.createCollection(c)
