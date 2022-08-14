@@ -125,13 +125,13 @@ const init = (app: Router) => {
 
   // todo should getting tokens for a specific user be hidden? its blockchain data anyway so maybe no
   app.get(
-    '/wallet/:userUuid/:creatorUuid',
-    body('userUuid').isUUID(),
+    '/wallet/:ownerUuid/:creatorUuid',
+    body('ownerUuid').isUUID(),
     body('creatorUuid').isUUID(),
     express.raw({type: 'application/json'}),
     getTokensByOwnerAndCreator
   )
-  app.get('/:userUuid', express.raw({type: 'application/json'}), getTokensByOwner)
+  app.get('/:ownerUuid', express.raw({type: 'application/json'}), getTokensByOwner)
   app.get('/', express.raw({type: 'application/json'}), getTokens)
 }
 
