@@ -34,11 +34,21 @@ const updateUser = async (req: Request, res: Response) => {
   const conn = await new DbHelper().connect()
   try {
     const user = await conn.getUserByUUID(req.session.userUuid)
-    user.publicLink = publicLink
-    user.profileImage = profileImage
-    user.profileImageBg = profileImageBg
-    user.name = name
-    user.description = description
+    if (publicLink) {
+      user.publicLink = publicLink
+    }
+    if (profileImage) {
+      user.profileImage = profileImage
+    }
+    if (profileImageBg) {
+      user.profileImageBg = profileImageBg
+    }
+    if (name) {
+      user.name = name
+    }
+    if (description) {
+      user.description = description
+    }
     if (userType) {
       user.userType = userType
     }
