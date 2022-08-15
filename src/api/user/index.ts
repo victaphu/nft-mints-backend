@@ -28,7 +28,8 @@ const createUser = async (req: Request, res: Response) => {
 const updateUser = async (req: Request, res: Response) => {
   const {name, publicLink, profileImage, profileImageBg, userType, description} = req.body
   if (!req.session.userUuid) {
-    throw new Error('user not logged in')
+    res.status(400).send('user not logged in')
+    return
   }
 
   const conn = await new DbHelper().connect()
@@ -112,8 +113,8 @@ const init = (app: Router, version = 0) => {
   app.post('/', body('phone').isString().isLength({min: 10}), createUser)
   app.put('/', updateUser)
   app.get('/whoami', getUserBySession)
-  app.get('/:uuid', getUser)
   app.get('/phone/:phone', getUserByPhone)
+  app.get('/:uuid', getUser)
 }
 
 export default init

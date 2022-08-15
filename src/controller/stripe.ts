@@ -68,7 +68,7 @@ export const authorizeOAUTH = async (req: Request) => {
     if (err.type === 'StripeInvalidGrantError') {
       throw new Error('Invalid authorization code: ' + code)
     } else {
-      throw new Error('An unknown error occurred.')
+      throw err
     }
   }
 }
