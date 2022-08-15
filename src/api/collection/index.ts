@@ -2,6 +2,7 @@ import {Request, Response, Router} from 'express'
 import DbHelper from 'src/api/db-helper'
 import {TokenController} from 'src/controller'
 import {body} from 'express-validator'
+import {errorToObject} from '../transport'
 
 // TODO: Safely close connection
 const db = new DbHelper()
@@ -19,24 +20,28 @@ const createCollection = async (req: Request, res: Response) => {
     // todo: refactor protected path using express-session
     return res.status(400).send({message: 'Login as creator first'})
   }
-
-  res.json(
-    await TokenController.createCollection({
-      title,
-      description,
-      link,
-      rate,
-      maxMint,
-      ownerUUID: ownerUUID!,
-      collectionImage,
-      collectionImages,
-      tokenType: +tokenType,
-      perks,
-      creatorRoyalty,
-      additionalDetails,
-      properties,
-    })
-  )
+  try {
+    res.json(
+      await TokenController.createCollection({
+        title,
+        description,
+        link,
+        rate,
+        maxMint,
+        ownerUUID: ownerUUID,
+        collectionImage,
+        collectionImages,
+        tokenType: +tokenType,
+        perks,
+        creatorRoyalty,
+        additionalDetails,
+        properties,
+      })
+    )
+  } catch (err) {
+    console.log(err)
+    res.status(400).send(errorToObject(err))
+  }
 }
 
 const getCollection = async (req: Request, res: Response) => {
