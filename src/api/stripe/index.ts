@@ -26,7 +26,7 @@ const authorizeOAUTH = async (request: Request, response: Response) => {
   } catch (err) {
     console.log(err)
     // response.status(400).send(errorToObject(err))
-    response.redirect(redirectFailedAuth!)
+    response.redirect(redirectFailedAuth!.replace(':userUuid', request.session.userUuid!))
     return
   }
 }

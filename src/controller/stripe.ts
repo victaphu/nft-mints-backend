@@ -63,7 +63,7 @@ export const authorizeOAUTH = async (req: Request) => {
       stripeUserId: response.stripe_user_id!,
       stripePublishableKey: response.stripe_publishable_key!,
     })
-    return authorizedSuccessUrl
+    return authorizedSuccessUrl.replace(':userUuid', req.session.userUuid!)
   } catch (err) {
     if (err.type === 'StripeInvalidGrantError') {
       throw new Error('Invalid authorization code: ' + code)
