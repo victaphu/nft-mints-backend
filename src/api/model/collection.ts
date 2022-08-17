@@ -72,6 +72,7 @@ export default class Collection {
     t.perks = result.perks
     t.additionalDetails = result.additionalDetails
     t.creatorRoyalties = result.creatorRoyalties
+    t.collectionAddress = result.collectionAddress
     return t
   }
 }
