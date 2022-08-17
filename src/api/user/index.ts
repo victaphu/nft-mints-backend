@@ -116,9 +116,9 @@ const getUuidByVanityUrl = async (req: Request, res: Response) => {
   try {
     const user = await conn.getUserByTag(tag)
     if (!user) {
-      return res.json({message: 'not found'})
+      return res.json({uuid: null})
     }
-    return res.json(user)
+    return res.json({uuid: user.uuid})
   } catch (err) {
     console.log(err)
     res.status(400).send(errorToObject(err))
