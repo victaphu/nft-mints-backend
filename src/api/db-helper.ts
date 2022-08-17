@@ -101,6 +101,19 @@ export default class DbHelper {
     return user
   }
 
+  async getUserByTag(tag: string): Promise<User | null> {
+    const collection = 'users'
+    const result = await this.db?.collection(collection).findOne({publicLink: tag})
+    if (!result) {
+      // throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
+      console.log(`user with tag ${tag} not found`)
+      return null
+    }
+
+    const user = User.fromDatabase(result)
+    return user
+  }
+
   async createStripeUser(stripeUser: StripeUser) {
     const collection = 'stripeuser'
     const existingUser = await this.getStripeUser(stripeUser.userUuid)

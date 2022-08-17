@@ -109,9 +109,28 @@ const getUserByPhone = async (req: Request, res: Response) => {
   }
 }
 
+const getUuidByVanityUrl = async (req: Request, res: Response) => {
+  const {tag} = req.params
+
+  const conn = await new DbHelper().connect()
+  try {
+    const user = await conn.getUserByTag(tag)
+    if (!user) {
+      return res.json({message: 'not found'})
+    }
+    return res.json(user)
+  } catch (err) {
+    console.log(err)
+    res.status(400).send(errorToObject(err))
+  } finally {
+    conn.close()
+  }
+}
+
 const init = (app: Router, version = 0) => {
   app.post('/', body('phone').isString().isLength({min: 10}), createUser)
   app.put('/', updateUser)
+  app.get('/vanity/:tag', body('tag').isString(), getUuidByVanityUrl)
   app.get('/whoami', getUserBySession)
   app.get('/phone/:phone', getUserByPhone)
   app.get('/:uuid', getUser)
