@@ -193,6 +193,18 @@ export async function getCollectionByUser(userUuid: string) {
   }
 }
 
+export async function getCollectionByUserAndType(userUuid: string, tokenType: TokenType) {
+  console.log('Get collection', userUuid, tokenType)
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  try {
+    return await con.getCollectionsByFilter({ownerUUID: userUuid, tokenType})
+  } finally {
+    con.close()
+  }
+}
+
 export async function getCollections() {
   const db = new DbHelper()
 

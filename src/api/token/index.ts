@@ -29,14 +29,18 @@ const getTokensByOwner = async (request: Request, response: Response) => {
 }
 
 const getTokensByOwnerAndCreator = async (request: Request, response: Response) => {
-  const {ownerUuid, creatorUuid} = request.params
+  const {ownerUuid, creatorUuid, tokenType} = request.params
 
-  // if (tokenId) {
-  // }
   const tokens = await TokenController.fetchTokenByOwnerUuid(ownerUuid)
-  response.json(
-    tokens.filter((t) => t.collection).filter((t) => t.collection?.ownerUUID === creatorUuid)
-  )
+  const filtered = tokens
+    .filter((t) => t.collection)
+    .filter((t) => t.collection?.ownerUUID === creatorUuid)
+
+  if (tokenType && !isNaN(+tokenType)) {
+    return response.json(filtered.filter((token) => token.collection?.tokenType === +tokenType))
+  }
+
+  return response.json(filtered)
 }
 
 const getTokenByUUID = async (request: Request, response: Response) => {
@@ -125,12 +129,13 @@ const init = (app: Router) => {
 
   // todo should getting tokens for a specific user be hidden? its blockchain data anyway so maybe no
   app.get(
-    '/wallet/:ownerUuid/:creatorUuid',
+    '/wallet/:ownerUuid/:creatorUuid/:tokenType',
     body('ownerUuid').isUUID(),
     body('creatorUuid').isUUID(),
     express.raw({type: 'application/json'}),
     getTokensByOwnerAndCreator
   )
+
   app.get('/:ownerUuid', express.raw({type: 'application/json'}), getTokensByOwner)
   app.get('/', express.raw({type: 'application/json'}), getTokens)
 }

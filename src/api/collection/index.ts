@@ -3,6 +3,7 @@ import DbHelper from 'src/api/db-helper'
 import {TokenController} from 'src/controller'
 import {body} from 'express-validator'
 import {errorToObject} from '../transport'
+import {TokenType} from 'src/types/tokens'
 
 // TODO: Safely close connection
 const db = new DbHelper()
@@ -67,11 +68,20 @@ const getUserDetailsWithCollections = async (req: Request, res: Response) => {
 }
 
 const getCollections = async (req: Request, res: Response) => {
+  const {type, uuid} = req.params
+  if (type && uuid && !isNaN(+type)) {
+    // type must be number if it is defined and must be a token type
+    return res.json(await TokenController.getCollectionByUserAndType(uuid, +type))
+  }
+  if (uuid) {
+    return res.json(await TokenController.getCollectionByUser(uuid))
+  }
   return res.json(await TokenController.getCollections())
 }
 
 const init = (app: Router, version: number = 0) => {
   app.get('/all', getCollections)
+  app.get('/all/:uuid/:type', getCollections)
   app.get('/mycollections', getUserDetailsWithCollections)
   app.get('/:uuid', getCollection)
   app.get('/user/:userUuid', body('userUuid').isUUID(), getCollectionsByUser)
