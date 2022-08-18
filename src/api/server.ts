@@ -107,7 +107,7 @@ export const RESTServer = async () => {
   const userLogin = Router({mergeParams: true})
   const stripeConnect = Router({mergeParams: true})
 
-  api.use('/v0/payment', paymentRouter)
+  api.use('/v1/payment', paymentRouter)
   api.use('/v0/minter', minterRouter)
   api.use('/v0/sms', smsRouter)
   api.use('/v0/tokens', tokensRouter)
