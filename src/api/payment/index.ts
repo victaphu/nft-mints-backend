@@ -41,8 +41,7 @@ const checkout = async (request: Request, response: Response) => {
 
 const checkoutv2 = async (request: Request, response: Response) => {
   // note: checkout should also include the requested smsCode
-  const {nfts, mobileNumber, smsCode, successUrl, cancelUrl} = request.body
-  console.log(request.body)
+  const {nfts, successUrl, cancelUrl} = request.body
   const errors = validationResult(request)
 
   if (!errors.isEmpty()) {
@@ -50,26 +49,27 @@ const checkoutv2 = async (request: Request, response: Response) => {
     response.status(400).send({status: 'failed', message: errors})
     return
   }
+
+  if (!request.session.userUuid) {
+    response.status(400).json({message: 'user is not logged in'})
+    return
+  }
+
   let conn
   let user
   try {
     conn = await new DbHelper().connect()
-    user = await conn.getUserByPhone(mobileNumber)
+    user = await conn.getUserByUUID(request.session.userUuid)
     if (!user) {
-      // throw new Error(`User does not exist`)
-      await conn.createUser(new User(User.generateUUID(), mobileNumber))
-      user = await conn.getUserByPhone(mobileNumber)
-    }
-    if (user!.phone !== mobileNumber) {
-      throw new Error(`User phone does not match records`)
+      throw new Error(`User does not exist`)
     }
     const session = await PaymentController.checkoutv2({
       nfts,
-      mobileNumber,
-      smsCode,
+      mobileNumber: user.phone,
+      smsCode: 0,
       successUrl: successUrl.replace(':userUuid', user!.uuid),
       cancelUrl: cancelUrl.replace(':userUuid', user!.uuid),
-      userId: user!.uuid,
+      userId: user.uuid,
     })
     response.status(200).json({url: session.url!})
   } catch (err) {
@@ -94,7 +94,7 @@ const paymentHook = async (request: Request, response: Response) => {
   response.send()
 }
 
-const init = (app: Router) => {
+const init = (app: Router, version = 0) => {
   app.post('/hook', express.raw({type: 'application/json'}), paymentHook)
   app.post(
     '/checkout',
@@ -107,33 +107,12 @@ const init = (app: Router) => {
     checkout
   )
 
-  /*
-    {
-      nfts: [
-        { // minting!
-          nftAddress: "0x00",
-          quantity: 2
-        },
-        { // purchase existing
-          nftAddress: "0x00",
-          nftIds: [1,2,3]
-        }
-      ],
-      mobileNumber: 123,
-      smsCode: 123,
-      successUrl: "url",
-      cancelUrl: "cancel url"
-    }
-  */
   app.post(
     '/checkoutv2',
     express.raw({type: 'application/json'}),
     body('nfts').isArray({min: 1}),
     body('nfts.*.collectionUuid').not().isEmpty(), //
     body('nfts.*.quantity').isNumeric(), // minting a bunch of them
-    body('mobileNumber').isLength({min: 5}),
-    body('smsCode').isNumeric().isLength({min: 5, max: 5}),
-    // body('mobileNumber').isMobilePhone('any'), // get this working
     body('successUrl').isURL({require_tld: false}),
     body('cancelUrl').isURL({require_tld: false}),
     checkoutv2

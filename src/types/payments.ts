@@ -1,3 +1,5 @@
+import {UserType} from './users'
+
 export interface PaymentCheckout {
   tokenId: string
   tokenAddress: string
@@ -14,7 +16,7 @@ export interface NFTInterface {
 export interface PaymentCheckoutv2 {
   nfts: Array<NFTInterface>
   mobileNumber: string
-  smsCode: number
+  smsCode?: number
   successUrl: string
   cancelUrl: string
   userId: string
