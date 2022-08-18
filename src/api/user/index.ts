@@ -34,9 +34,13 @@ const updateUser = async (req: Request, res: Response) => {
 
   const conn = await new DbHelper().connect()
   try {
-    if (publicLink?.length > 0 && (await conn.getUserByTag(publicLink))) {
-      res.status(400).send('cannot set public link, link already in use')
-      return
+    if (publicLink?.length > 0) {
+      const linkedUser = await conn.getUserByTag(publicLink)
+      // user exists and is not the same as session user
+      if (linkedUser !== null && linkedUser.uuid !== req.session.userUuid) {
+        res.status(400).send('cannot set public link, link already in use')
+        return
+      }
     }
     const user = await conn.getUserByUUID(req.session.userUuid)
     if (publicLink) {
