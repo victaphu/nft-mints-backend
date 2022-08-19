@@ -29,5 +29,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
+          passphrase: ${{ secrets.PASSPHRASE }}
           script: ./scripts/update-backend.sh
         
