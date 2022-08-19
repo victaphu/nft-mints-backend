@@ -28,7 +28,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
           passphrase: ${{ secrets.PASSPHRASE }}
+          port: 22
           script: ./scripts/update-backend.sh
         
