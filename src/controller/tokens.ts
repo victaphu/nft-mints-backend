@@ -5,6 +5,7 @@ import Token from 'src/api/model/token'
 import Wallet from 'src/api/wallet'
 import dataObj from 'src/store/mock'
 import {CollectionCreate, TokenType} from 'src/types/tokens'
+import {UserType} from 'src/types/users'
 import {StripeController} from '.'
 import {config} from '../config'
 
@@ -81,6 +82,11 @@ export async function createCollection({
 
     if (!ethers.utils.isAddress(user.walletAddress)) {
       throw new Error('misconfigured, user wallet address is not valid')
+    }
+
+    if (user.userType !== UserType.CREATOR) {
+      user.userType = UserType.CREATOR
+      await con.updateUser(user)
     }
 
     const c = new Collection(

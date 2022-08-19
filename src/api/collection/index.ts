@@ -21,6 +21,7 @@ const createCollection = async (req: Request, res: Response) => {
     // todo: refactor protected path using express-session
     return res.status(400).send({message: 'Login as creator first'})
   }
+
   try {
     res.json(
       await TokenController.createCollection({

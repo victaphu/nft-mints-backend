@@ -39,7 +39,7 @@ export default class User {
     u.id = result.id
     u.pendingCode = result.pendingCode // should we hide this?
     u.codeHash = result.codeHash // should we hide this?
-    u.userType = result.userType || UserType.CREATOR
+    u.userType = result.userType || UserType.USER
     u.stripeConnected = stripeConnected
     u.walletAddress = result.walletAddress
     u.name = result.name
