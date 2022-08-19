@@ -67,7 +67,6 @@ export const RESTServer = async () => {
           secure: true,
           httpOnly: true,
           sameSite: 'none',
-          maxAge: 1000 * 60 * 24, // 24 hours
         },
         store: MongoStore.create({
           mongoUrl: config.mongo.mongoUri,

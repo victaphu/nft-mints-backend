@@ -88,7 +88,6 @@ const getUserBySession = async (req: Request, res: Response) => {
   const uuid = req.session.userUuid!
 
   if (!uuid) {
-    console.log(req)
     res.status(400).json({message: 'user not logged in'})
     return
   }
