@@ -101,6 +101,19 @@ export default class DbHelper {
     return user
   }
 
+  async getUserByTag(tag: string): Promise<User | null> {
+    const collection = 'users'
+    const result = await this.db?.collection(collection).findOne({publicLink: tag})
+    if (!result) {
+      // throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
+      console.log(`user with tag ${tag} not found`)
+      return null
+    }
+
+    const user = User.fromDatabase(result)
+    return user
+  }
+
   async createStripeUser(stripeUser: StripeUser) {
     const collection = 'stripeuser'
     const existingUser = await this.getStripeUser(stripeUser.userUuid)
@@ -185,6 +198,20 @@ export default class DbHelper {
         {$set: {...token, sequence: token.sequence?.toString() || null}},
         {upsert: true}
       )
+  }
+
+  async getLatestToken(uuid: string) {
+    // find the latest token last 15 seconds and return this
+    const collection = 'tokens'
+    const result = this.db
+      ?.collection(collection)
+      .find({uuid, dateCreated: {$gt: new Date(Date.now() - 15 * 1000).toISOString()}})
+      ?.limit(1)
+      ?.sort({$natural: -1})
+    if (!result) {
+      return null
+    }
+    return Token.fromDatabase(result)
   }
 
   async createSmsTokenFor(phone: string, pendingCode: string, codeHash: string) {

@@ -2,6 +2,8 @@ import {Request, Response, Router} from 'express'
 import DbHelper from 'src/api/db-helper'
 import {TokenController} from 'src/controller'
 import {body} from 'express-validator'
+import {errorToObject} from '../transport'
+import {TokenType} from 'src/types/tokens'
 
 // TODO: Safely close connection
 const db = new DbHelper()
@@ -11,7 +13,7 @@ const createCollection = async (req: Request, res: Response) => {
   const {title, description, link, rate, maxMint, collectionImage, tokenType} = req.body
 
   // v1 properties
-  const {perks, creatorRoyalty, additionalDetails, properties} = req.body
+  const {perks, creatorRoyalty, additionalDetails, properties, collectionImages} = req.body
 
   const ownerUUID = req.session.userUuid
 
@@ -20,22 +22,28 @@ const createCollection = async (req: Request, res: Response) => {
     return res.status(400).send({message: 'Login as creator first'})
   }
 
-  res.json(
-    await TokenController.createCollection(
-      title,
-      description,
-      link,
-      rate,
-      maxMint,
-      ownerUUID!,
-      collectionImage,
-      +tokenType,
-      perks,
-      creatorRoyalty,
-      additionalDetails,
-      properties
+  try {
+    res.json(
+      await TokenController.createCollection({
+        title,
+        description,
+        link,
+        rate,
+        maxMint,
+        ownerUUID: ownerUUID,
+        collectionImage,
+        collectionImages,
+        tokenType: +tokenType,
+        perks,
+        creatorRoyalty,
+        additionalDetails,
+        properties,
+      })
     )
-  )
+  } catch (err) {
+    console.log(err)
+    res.status(400).send(errorToObject(err))
+  }
 }
 
 const getCollection = async (req: Request, res: Response) => {
@@ -55,15 +63,26 @@ const getUserDetailsWithCollections = async (req: Request, res: Response) => {
   if (!req.session.userUuid) {
     return res.status(400).send({message: 'Login as creator first'})
   }
-  return res.json(await TokenController.getUserDetailsWithCollections(req.session.userUuid!))
+  const data = await TokenController.getUserDetailsWithCollections(req.session.userUuid!)
+  data.collections = data.collections?.filter((e) => e.tokenType) || []
+  return res.json(data.collections)
 }
 
 const getCollections = async (req: Request, res: Response) => {
+  const {type, uuid} = req.params
+  if (type && uuid && !isNaN(+type)) {
+    // type must be number if it is defined and must be a token type
+    return res.json(await TokenController.getCollectionByUserAndType(uuid, +type))
+  }
+  if (uuid) {
+    return res.json(await TokenController.getCollectionByUser(uuid))
+  }
   return res.json(await TokenController.getCollections())
 }
 
 const init = (app: Router, version: number = 0) => {
   app.get('/all', getCollections)
+  app.get('/all/:uuid/:type', getCollections)
   app.get('/mycollections', getUserDetailsWithCollections)
   app.get('/:uuid', getCollection)
   app.get('/user/:userUuid', body('userUuid').isUUID(), getCollectionsByUser)

@@ -14,6 +14,8 @@ import user from './user'
 import login from './user/login'
 import mint from './minter'
 import stripe from './stripe'
+import MongoStore from 'connect-mongo'
+// const MongoStore = require('connect-mongo');
 
 import bodyParser from 'body-parser'
 const l = logger(module)
@@ -57,12 +59,19 @@ export const RESTServer = async () => {
     when(
       (req: any) => req.headers['x-forwarded-proto'] === 'https' || req.protocol === 'https',
       session({
+        name: 'dj3n session',
+        resave: false,
+        saveUninitialized: false,
         secret: config.api.sessionsecret,
         cookie: {
           secure: true,
           httpOnly: true,
           sameSite: 'none',
         },
+        store: MongoStore.create({
+          mongoUrl: config.mongo.mongoUri,
+          dbName: config.mongo.mongoDb,
+        }),
       }),
       session({
         secret: config.api.sessionsecret,
@@ -70,6 +79,10 @@ export const RESTServer = async () => {
           secure: false,
           httpOnly: false,
         },
+        store: MongoStore.create({
+          mongoUrl: config.mongo.mongoUri,
+          dbName: config.mongo.mongoDb,
+        }),
       })
     )
   )
@@ -97,7 +110,7 @@ export const RESTServer = async () => {
   const userLogin = Router({mergeParams: true})
   const stripeConnect = Router({mergeParams: true})
 
-  api.use('/v0/payment', paymentRouter)
+  api.use('/v1/payment', paymentRouter)
   api.use('/v0/minter', minterRouter)
   api.use('/v0/sms', smsRouter)
   api.use('/v0/tokens', tokensRouter)

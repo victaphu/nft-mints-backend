@@ -23,6 +23,10 @@ export default class Wallet {
     this.wallet = new ethers.Wallet(privateKey, this.provider)
   }
 
+  getPublicKey(): Promise<string> {
+    return this.wallet.getAddress()
+  }
+
   async transferToken(token: Token, destination: string, verificationCode: string) {
     if (token.isClaimed) throw new Error('Token has already been claimed')
 
@@ -83,6 +87,9 @@ export default class Wallet {
   }
 
   async mint(owner: User, collection: Collection) {
+    if (!owner.walletAddress || !ethers.utils.isAddress(owner.walletAddress)) {
+      throw new Error('failed, owner wallet address is not valid')
+    }
     let conn
     try {
       const db = new DbHelper()
@@ -101,14 +108,13 @@ export default class Wallet {
 
       console.log('Minting transaction')
       const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
-      const tx = await contract
-        .connect(this.wallet)
-        .mint(this.wallet.getAddress(), token.uniqueMintId)
+      const tx = await contract.connect(this.wallet).mint(owner.walletAddress, token.uniqueMintId)
       await tx.wait()
 
       console.log('Finding sequence ID')
       const sequence = await contract.callStatic.mintIdToTokenId(BigNumber.from(token.uniqueMintId))
       token.sequence = sequence
+      token.isClaimed = true // transferred to the owner if this succeeds
       await conn.updateToken(token)
       return token
     } finally {

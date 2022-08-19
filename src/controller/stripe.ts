@@ -4,6 +4,7 @@ import {v4 as uuidv4} from 'uuid'
 import StripeUser from 'src/api/model/stripe'
 import DbHelper from 'src/api/db-helper'
 import {config} from 'src/config'
+import User from 'src/api/model/user'
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const stripeAPIKey = config.stripe.stripeApiKey
@@ -62,12 +63,12 @@ export const authorizeOAUTH = async (req: Request) => {
       stripeUserId: response.stripe_user_id!,
       stripePublishableKey: response.stripe_publishable_key!,
     })
-    return authorizedSuccessUrl
+    return authorizedSuccessUrl.replace(':userUuid', req.session.userUuid!)
   } catch (err) {
     if (err.type === 'StripeInvalidGrantError') {
       throw new Error('Invalid authorization code: ' + code)
     } else {
-      throw new Error('An unknown error occurred.')
+      throw err
     }
   }
 }
@@ -99,6 +100,22 @@ const saveAccountId = async ({
     con = await new DbHelper().connect()
     await con.createStripeUser(stripeUser)
     return
+  } finally {
+    if (con) {
+      con.close()
+    }
+  }
+}
+
+export async function getStripeUser(userUuid: string): Promise<User> {
+  // retrieve the users' stripe configuration
+  let con = null
+  let user = null
+  try {
+    con = await new DbHelper().connect()
+    user = await con.getStripeUser(userUuid)
+
+    return User.fromDatabase(user)
   } finally {
     if (con) {
       con.close()

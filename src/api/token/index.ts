@@ -28,6 +28,21 @@ const getTokensByOwner = async (request: Request, response: Response) => {
   response.json(await TokenController.fetchTokenByOwnerUuid(ownerUuid))
 }
 
+const getTokensByOwnerAndCreator = async (request: Request, response: Response) => {
+  const {ownerUuid, creatorUuid, tokenType} = request.params
+
+  const tokens = await TokenController.fetchTokenByOwnerUuid(ownerUuid)
+  const filtered = tokens
+    .filter((t) => t.collection)
+    .filter((t) => t.collection?.ownerUUID === creatorUuid)
+
+  if (tokenType && !isNaN(+tokenType)) {
+    return response.json(filtered.filter((token) => token.collection?.tokenType === +tokenType))
+  }
+
+  return response.json(filtered)
+}
+
 const getTokenByUUID = async (request: Request, response: Response) => {
   const {tokenUuid} = request.params
 
@@ -111,7 +126,17 @@ const init = (app: Router) => {
   )
   app.get('/owner/:sequence/', express.raw({type: 'application/json'}), getWalletOwnerForNFT)
   app.get('/meta/:uuid/', express.raw({type: 'application/json'}), getMetadata)
-  app.get('/:userUuid', express.raw({type: 'application/json'}), getTokensByOwner)
+
+  // todo should getting tokens for a specific user be hidden? its blockchain data anyway so maybe no
+  app.get(
+    '/wallet/:ownerUuid/:creatorUuid/:tokenType',
+    body('ownerUuid').isUUID(),
+    body('creatorUuid').isUUID(),
+    express.raw({type: 'application/json'}),
+    getTokensByOwnerAndCreator
+  )
+
+  app.get('/:ownerUuid', express.raw({type: 'application/json'}), getTokensByOwner)
   app.get('/', express.raw({type: 'application/json'}), getTokens)
 }
 

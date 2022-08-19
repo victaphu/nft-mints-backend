@@ -25,6 +25,50 @@ const createUser = async (req: Request, res: Response) => {
   }
 }
 
+const updateUser = async (req: Request, res: Response) => {
+  const {name, publicLink, profileImage, profileImageBg, description} = req.body
+  if (!req.session.userUuid) {
+    res.status(400).send('user not logged in')
+    return
+  }
+
+  const conn = await new DbHelper().connect()
+  try {
+    if (publicLink?.length > 0) {
+      const linkedUser = await conn.getUserByTag(publicLink)
+      // user exists and is not the same as session user
+      if (linkedUser !== null && linkedUser.uuid !== req.session.userUuid) {
+        res.status(400).send('cannot set public link, link already in use')
+        return
+      }
+    }
+    const user = await conn.getUserByUUID(req.session.userUuid)
+    if (publicLink) {
+      user.publicLink = publicLink
+    }
+    if (profileImage) {
+      user.profileImage = profileImage
+    }
+    if (profileImageBg) {
+      user.profileImageBg = profileImageBg
+    }
+    if (name) {
+      user.name = name
+    }
+    if (description) {
+      user.description = description
+    }
+    await conn.updateUser(user)
+
+    return res.json(user)
+  } catch (err) {
+    console.log(err)
+    res.status(400).send(errorToObject(err))
+  } finally {
+    conn.close()
+  }
+}
+
 const getUser = async (req: Request, res: Response) => {
   const uuid = req.params.uuid
 
@@ -42,6 +86,11 @@ const getUser = async (req: Request, res: Response) => {
 
 const getUserBySession = async (req: Request, res: Response) => {
   const uuid = req.session.userUuid!
+
+  if (!uuid) {
+    res.status(400).json({message: 'user not logged in'})
+    return
+  }
 
   const conn = await new DbHelper().connect()
   try {
@@ -70,11 +119,31 @@ const getUserByPhone = async (req: Request, res: Response) => {
   }
 }
 
+const getUuidByVanityUrl = async (req: Request, res: Response) => {
+  const {tag} = req.params
+
+  const conn = await new DbHelper().connect()
+  try {
+    const user = await conn.getUserByTag(tag)
+    if (!user) {
+      return res.json({uuid: null})
+    }
+    return res.json({uuid: user.uuid})
+  } catch (err) {
+    console.log(err)
+    res.status(400).send(errorToObject(err))
+  } finally {
+    conn.close()
+  }
+}
+
 const init = (app: Router, version = 0) => {
   app.post('/', body('phone').isString().isLength({min: 10}), createUser)
+  app.put('/', updateUser)
+  app.get('/vanity/:tag', body('tag').isString(), getUuidByVanityUrl)
   app.get('/whoami', getUserBySession)
-  app.get('/:uuid', getUser)
   app.get('/phone/:phone', getUserByPhone)
+  app.get('/:uuid', getUser)
 }
 
 export default init

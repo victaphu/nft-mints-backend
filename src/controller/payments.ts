@@ -3,7 +3,7 @@ import {NFTInterface, PaymentCheckout, PaymentCheckoutv2} from 'src/types/paymen
 import Stripe from 'stripe'
 import {TokenController} from '.'
 import axios from 'axios'
-import {getStripeObjectByUserUuid} from './stripe'
+import {getStripeObjectByUserUuid, getStripeUser} from './stripe'
 import {config} from 'src/config'
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
@@ -74,6 +74,16 @@ export async function checkoutv2({
       }
     })
   )
+
+  if (!ownerUuid) {
+    throw new Error('user not found')
+  }
+
+  const stripeUser = getStripeUser(ownerUuid)
+
+  if (!stripeUser) {
+    throw new Error('user not yet registered with stripe')
+  }
 
   // todo: multi mint from multiple users?? do not allow!
 

@@ -31,6 +31,30 @@ const doMint = async (req: Request, res: Response) => {
   }
 }
 
+const getLatestToken = async (req: Request, res: Response) => {
+  if (!req.session.userUuid) {
+    res.status(400).json({message: 'user not logged in'})
+    return
+  }
+  let conn
+  try {
+    // todo: make this more robust; get latest token is dodgy
+    conn = await new DbHelper().connect()
+    const token = await conn.getLatestToken(req.session.userUuid)
+
+    if (!token) {
+      res.status(200).json({token: null})
+    }
+
+    res.status(200).json({token})
+  } catch (e) {
+    console.error(e)
+    res.status(500).json(e)
+  } finally {
+    conn?.close()
+  }
+}
+
 const initClaim = async (req: Request, res: Response) => {
   let conn
   try {
@@ -74,7 +98,8 @@ const getSequenceIdFromMintID = async (req: Request, res: Response) => {
 
 const init = (app: Router, version: number = 0) => {
   l.info('Initialise minter endpoints')
-  app.get('/chain-mint/:owner/:collection', doMint)
+  app.get('/latest', getLatestToken) // get latest token minted within 1 minute (or null if no token found)
+  app.get('/chain-mint/:owner/:collection', doMint) // todo: remove this
   app.get('/claim/init/:owner', initClaim)
   app.post('/claim/final/', finalizeClaim)
   app.get('/mint-id/:contract/:id', getSequenceIdFromMintID)

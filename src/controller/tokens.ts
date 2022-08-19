@@ -4,7 +4,8 @@ import Collection from 'src/api/model/collection'
 import Token from 'src/api/model/token'
 import Wallet from 'src/api/wallet'
 import dataObj from 'src/store/mock'
-import {TokenType} from 'src/types/tokens'
+import {CollectionCreate, TokenType} from 'src/types/tokens'
+import {UserType} from 'src/types/users'
 import {StripeController} from '.'
 import {config} from '../config'
 
@@ -43,20 +44,21 @@ export async function fetchTokens() {
   return dataObj
 }
 
-export async function createCollection(
-  title: string | 'Anonymous Collection',
-  description: string | '',
-  link: string | '',
-  rate: number | 0,
-  maxMint: number | 1,
-  ownerUUID: string,
-  collectionImage: string | '',
-  tokenType: TokenType = TokenType.COLLECTION,
-  perks: string | '',
-  creatorRoyalty: number | 0,
-  additionalDetails: string | '',
-  properties: object | {}
-) {
+export async function createCollection({
+  title,
+  description,
+  link,
+  rate,
+  maxMint,
+  ownerUUID,
+  collectionImage,
+  collectionImages,
+  tokenType,
+  perks,
+  creatorRoyalty,
+  additionalDetails,
+  properties,
+}: CollectionCreate) {
   let price = rate
   if (+rate < 1 || !rate) {
     price = 0 // free if < 1
@@ -82,6 +84,11 @@ export async function createCollection(
       throw new Error('misconfigured, user wallet address is not valid')
     }
 
+    if (user.userType !== UserType.CREATOR) {
+      user.userType = UserType.CREATOR
+      await con.updateUser(user)
+    }
+
     const c = new Collection(
       ownerUUID,
       title || 'Anonymous Collection',
@@ -91,6 +98,7 @@ export async function createCollection(
       maxMint || 1
     )
     c.collectionImage = collectionImage
+    c.collectionImages = collectionImages || [collectionImage]
     c.tokenType = tokenType
     c.perks = perks
     c.creatorRoyalties = creatorRoyalty
@@ -101,7 +109,8 @@ export async function createCollection(
     const collectionAddress = await wallet.deployCollection(
       c,
       'DJ3N',
-      user.walletAddress // TODO: use owner address from session
+      await wallet.getPublicKey()
+      // user.walletAddress
     )
 
     c.collectionAddress = collectionAddress
@@ -110,18 +119,26 @@ export async function createCollection(
     if (price > 0) {
       const tokenPrice = +rate * 100 // note: rate is in cents, so must multiply by 100 to get dollars
 
-      const product = await StripeController.registerProduct(
-        ownerUUID,
-        title || 'Anonymous Collection',
-        description || 'Anonymous Collection',
-        tokenPrice,
-        c.addUUIDStamp(),
-        collectionImage
-      )
+      const user = await con.getStripeUser(ownerUUID)
 
-      c.productId = product.id
-      // @ts-ignore ignoring since price should be returned as a price object with specific id
-      c.priceId = product.default_price?.id
+      if (user) {
+        // user exists lets create a stripe product
+        const product = await StripeController.registerProduct(
+          ownerUUID,
+          title || 'Anonymous Collection',
+          description || 'Anonymous Collection',
+          tokenPrice,
+          c.addUUIDStamp(),
+          collectionImage
+        )
+
+        c.productId = product.id
+        // @ts-ignore ignoring since price should be returned as a price object with specific id
+        c.priceId = product.default_price?.id
+      } else {
+        // otherwise maybe we should flag this as stripe not ready?
+        console.log('stripe is not connected for this user')
+      }
     } // no productId means product is free
 
     await con.createCollection(c)
@@ -177,6 +194,18 @@ export async function getCollectionByUser(userUuid: string) {
   const con = await db.connect()
   try {
     return await con.getCollectionsByFilter({ownerUUID: userUuid})
+  } finally {
+    con.close()
+  }
+}
+
+export async function getCollectionByUserAndType(userUuid: string, tokenType: TokenType) {
+  console.log('Get collection', userUuid, tokenType)
+  const db = new DbHelper()
+
+  const con = await db.connect()
+  try {
+    return await con.getCollectionsByFilter({ownerUUID: userUuid, tokenType})
   } finally {
     con.close()
   }
