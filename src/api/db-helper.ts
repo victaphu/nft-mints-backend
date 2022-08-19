@@ -200,6 +200,20 @@ export default class DbHelper {
       )
   }
 
+  async getLatestToken(uuid: string) {
+    // find the latest token last 15 seconds and return this
+    const collection = 'tokens'
+    const result = this.db
+      ?.collection(collection)
+      .find({uuid, dateCreated: {$gt: new Date(Date.now() - 15 * 1000).toISOString()}})
+      ?.limit(1)
+      ?.sort({$natural: -1})
+    if (!result) {
+      return null
+    }
+    return Token.fromDatabase(result)
+  }
+
   async createSmsTokenFor(phone: string, pendingCode: string, codeHash: string) {
     let user = await this.getUserByPhone(phone)
     if (!user) {

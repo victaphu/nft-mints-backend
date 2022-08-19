@@ -16,7 +16,7 @@ const getController = (user: User, conn: DbHelper) => {
   }
 
   return new LoginController({
-    appName: 'D3JN',
+    appName: 'DJ3N',
     store,
     lookup: async (k: string): Promise<string> => {
       const u = await conn.getUserByUUID(user.uuid)
