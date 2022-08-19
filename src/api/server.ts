@@ -59,11 +59,15 @@ export const RESTServer = async () => {
     when(
       (req: any) => req.headers['x-forwarded-proto'] === 'https' || req.protocol === 'https',
       session({
+        name: 'dj3n session',
+        resave: false,
+        saveUninitialized: false,
         secret: config.api.sessionsecret,
         cookie: {
           secure: true,
           httpOnly: true,
           sameSite: 'none',
+          maxAge: 1000 * 60 * 24, // 24 hours
         },
         store: MongoStore.create({
           mongoUrl: config.mongo.mongoUri,
