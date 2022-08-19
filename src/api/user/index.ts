@@ -87,6 +87,12 @@ const getUser = async (req: Request, res: Response) => {
 const getUserBySession = async (req: Request, res: Response) => {
   const uuid = req.session.userUuid!
 
+  if (!uuid) {
+    console.log(res)
+    res.status(400).json({message: 'user not logged in'})
+    return
+  }
+
   const conn = await new DbHelper().connect()
   try {
     return res.json(await conn.getUserByUUID(uuid))
