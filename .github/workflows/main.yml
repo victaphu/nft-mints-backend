@@ -19,7 +19,7 @@ jobs:
   deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
+    environment: dj3n-prod
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Deploy API to production
@@ -29,6 +29,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          port: 22
+          port: ${{ secrets.PORT }}
           script: ./scripts/update-backend.sh
         
