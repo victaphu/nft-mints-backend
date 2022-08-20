@@ -75,6 +75,15 @@ export async function generatePresignedGetURL(key: string) {
   })
 }
 
+export async function staticOrLookupFile(s3KeyOrStaticURL: string) {
+  const s = s3KeyOrStaticURL.toLowerCase()
+  if (s.startsWith('http://') || s.startsWith('https://')) {
+    return s3KeyOrStaticURL
+  } else {
+    return generatePresignedGetURL(s3KeyOrStaticURL)
+  }
+}
+
 function sanitizeName(s: string) {
   return s.replace(/[^\w.-]+/, '')
 }
