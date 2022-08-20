@@ -1,5 +1,5 @@
 import {Request, Response, Router} from 'express'
-import {generatePresignedUploadURL, generatePresignedGetURL} from 'src/controller/upload'
+import {generatePresignedUploadURL, generatePresignedGetURL} from 'src/controller/file'
 
 const getUploadURL = async (req: Request, res: Response) => {
   // TODO: Auth check
@@ -23,7 +23,7 @@ const getExistingFileURL = async (req: Request, res: Response) => {
 }
 
 const init = (app: Router) => {
-  console.log('init upload')
+  console.log('init file')
   app.get('/get', getExistingFileURL)
   app.get('/new/:name', getUploadURL)
 }
