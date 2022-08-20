@@ -63,6 +63,18 @@ export async function generatePresignedUploadURL(name: string, userUUID: string)
   return {...output, meta}
 }
 
+/**
+ * Returns a URL that can access an existing file. Valid for one hour.
+ * @param key {string}
+ */
+export async function generatePresignedGetURL(key: string) {
+  return s3.getSignedUrl('getObject', {
+    Bucket: config.bucket,
+    Key: key,
+    Expires: ONE_HOUR,
+  })
+}
+
 function sanitizeName(s: string) {
   return s.replace(/[^\w.-]+/, '')
 }
