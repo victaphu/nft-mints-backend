@@ -13,6 +13,7 @@ import collection from './collection'
 import user from './user'
 import login from './user/login'
 import mint from './minter'
+import upload from './upload'
 import stripe from './stripe'
 import MongoStore from 'connect-mongo'
 // const MongoStore = require('connect-mongo');
@@ -108,6 +109,7 @@ export const RESTServer = async () => {
   const collectionsRouterv1 = Router({mergeParams: true})
   const usersRouter = Router({mergeParams: true})
   const userLogin = Router({mergeParams: true})
+  const uploadRouter = Router({mergeParams: true})
   const stripeConnect = Router({mergeParams: true})
 
   api.use('/v1/payment', paymentRouter)
@@ -118,6 +120,7 @@ export const RESTServer = async () => {
   api.use('/v1/collections', collectionsRouterv1)
   api.use('/v0/users', usersRouter)
   api.use('/v1/login', userLogin)
+  api.use('/v0/upload', uploadRouter)
   api.use('/v0/stripe', stripeConnect)
 
   let server: Server
@@ -132,6 +135,7 @@ export const RESTServer = async () => {
   collection(collectionsRouterv1, 1)
   user(usersRouter)
   login(userLogin)
+  upload(uploadRouter)
   stripe(stripeConnect)
 
   l.info('REST API starting...')
