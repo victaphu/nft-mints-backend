@@ -54,6 +54,7 @@ export const authorizeOAUTH = async (req: Request) => {
     grant_type: 'authorization_code',
     code: code! as string,
   })
+  let con: DbHelper | null = null
 
   try {
     await saveAccountId({
@@ -63,12 +64,42 @@ export const authorizeOAUTH = async (req: Request) => {
       stripeUserId: response.stripe_user_id!,
       stripePublishableKey: response.stripe_publishable_key!,
     })
+    con = await new DbHelper().connect()
+    const col = await con.getCollectionsByFilter({ownerUuid: req.session.userUuid!})
+    if (col && col.length > 0) {
+      await Promise.all(
+        col.map(async (c) => {
+          if (!c.priceId && !c.productId && c.rate > 0) {
+            const tokenPrice = +c.rate * 100
+            console.log('registering a product for', c)
+            const product = await registerProduct(
+              req.session.userUuid!,
+              c.title || 'Anonymous Collection',
+              c.description || 'Anonymous Collection',
+              tokenPrice,
+              c.uuid!,
+              c.collectionImage!
+            )
+            c.productId = product.id
+            // @ts-ignore ignoring since price should be returned as a price object with specific id
+            c.priceId = product.default_price?.id
+            console.log('adding product', product)
+            return con!.updateCollection(c)
+          }
+        })
+      )
+    }
+
     return authorizedSuccessUrl.replace(':userUuid', req.session.userUuid!)
   } catch (err) {
     if (err.type === 'StripeInvalidGrantError') {
       throw new Error('Invalid authorization code: ' + code)
     } else {
       throw err
+    }
+  } finally {
+    if (con) {
+      con.close()
     }
   }
 }

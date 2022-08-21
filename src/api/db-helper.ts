@@ -247,6 +247,13 @@ export default class DbHelper {
     return this.db?.collection(mongoCollection).insertOne(objToAdd)
   }
 
+  async updateCollection(collection: Collection) {
+    const col = 'collection'
+    return this.db
+      ?.collection(col)
+      .findOneAndUpdate({uuid: collection.uuid}, {$set: {...collection}}, {upsert: true})
+  }
+
   async getCollectionsByFilter(filter: any) {
     const mongoCollection = 'collections'
     const result = await this.db?.collection(mongoCollection).find(filter) // TODO: limit returned reuslts
