@@ -79,7 +79,7 @@ const walletVerify = async (req: Request, res: Response) => {
     req.session.userWallet = address
 
     user.walletAddress = address
-    user.userType = userType || UserType.CREATOR
+    user.userType = userType || UserType.USER
     await conn.updateUser(user)
 
     return res.json(user)
