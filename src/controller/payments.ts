@@ -63,6 +63,8 @@ export async function checkoutv2({
     throw new Error('multi-minting not supported yet')
   }
 
+  let total = 0
+
   await Promise.all(
     nfts.map(async (nft: NFTInterface) => {
       const internal = await TokenController.getCollectionByUUID(nft.collectionUuid)
@@ -70,6 +72,7 @@ export async function checkoutv2({
         freeMints.push(nft.collectionUuid)
       } else {
         ownerUuid = internal?.ownerUUID!
+        total += internal!.rate * 100
         lineItems.push({price: internal?.priceId, quantity: nft.quantity})
       }
     })
@@ -112,6 +115,9 @@ export async function checkoutv2({
     mode: 'payment',
     success_url: successUrl,
     cancel_url: cancelUrl,
+    payment_intent_data: {
+      application_fee_amount: total * 0.05,
+    },
     metadata: {
       // note 500 character limit ...
       nfts: JSON.stringify(nfts),
