@@ -180,10 +180,10 @@ export async function getUserDetailsWithCollections(userUuid: string) {
     const collections = await con.getCollectionsByFilter({ownerUUID: userUuid})
     return {
       user,
-      collections,
+      collections: await Collection.serializeAll(collections),
     }
   } finally {
-    con.close()
+    await con.close()
   }
 }
 

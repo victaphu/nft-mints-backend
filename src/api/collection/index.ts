@@ -1,9 +1,11 @@
 import {Request, Response, Router} from 'express'
+import _ from 'lodash'
 import DbHelper from 'src/api/db-helper'
 import {TokenController} from 'src/controller'
 import {body} from 'express-validator'
 import {errorToObject} from '../transport'
 import {TokenType} from 'src/types/tokens'
+import Collection from 'src/api/model/collection'
 
 // TODO: Safely close connection
 const db = new DbHelper()
@@ -19,26 +21,28 @@ const createCollection = async (req: Request, res: Response) => {
 
   if (!ownerUUID) {
     // todo: refactor protected path using express-session
-    return res.status(400).send({message: 'Login as creator first'})
+    return res.status(403).send({message: 'Login as creator first'})
   }
 
   try {
     res.json(
-      await TokenController.createCollection({
-        title,
-        description,
-        link,
-        rate,
-        maxMint,
-        ownerUUID: ownerUUID,
-        collectionImage,
-        collectionImages,
-        tokenType: +tokenType,
-        perks,
-        creatorRoyalty,
-        additionalDetails,
-        properties,
-      })
+      await (
+        await TokenController.createCollection({
+          title,
+          description,
+          link,
+          rate,
+          maxMint,
+          ownerUUID: ownerUUID,
+          collectionImage,
+          collectionImages,
+          tokenType: +tokenType,
+          perks,
+          creatorRoyalty,
+          additionalDetails,
+          properties,
+        })
+      ).serialize()
     )
   } catch (err) {
     console.log(err)
@@ -49,12 +53,16 @@ const createCollection = async (req: Request, res: Response) => {
 const getCollection = async (req: Request, res: Response) => {
   const uuid = req.params.uuid
 
-  return res.json(await TokenController.getCollectionByUUID(uuid))
+  return res.json(await (await TokenController.getCollectionByUUID(uuid))?.serialize())
 }
 
 const getCollectionsByUser = async (req: Request, res: Response) => {
-  const uuid = req.params.userUuid
-  return res.json(await TokenController.getCollectionByUser(uuid))
+  try {
+    const uuid = req.params.userUuid
+    return res.json(Collection.serializeAll(await TokenController.getCollectionByUser(uuid)))
+  } catch (e) {
+    return res.status(400).send(errorToObject(e))
+  }
 }
 
 const getUserDetailsWithCollections = async (req: Request, res: Response) => {
@@ -64,6 +72,7 @@ const getUserDetailsWithCollections = async (req: Request, res: Response) => {
     return res.status(400).send({message: 'Login as creator first'})
   }
   const data = await TokenController.getUserDetailsWithCollections(req.session.userUuid!)
+  // TODO: Performance issue, do this with database instead add type as index
   data.collections = data.collections?.filter((e) => e.tokenType) || []
   return res.json(data.collections)
 }
@@ -72,12 +81,14 @@ const getCollections = async (req: Request, res: Response) => {
   const {type, uuid} = req.params
   if (type && uuid && !isNaN(+type)) {
     // type must be number if it is defined and must be a token type
-    return res.json(await TokenController.getCollectionByUserAndType(uuid, +type))
+    return res.json(
+      await Collection.serializeAll(await TokenController.getCollectionByUserAndType(uuid, +type))
+    )
   }
   if (uuid) {
-    return res.json(await TokenController.getCollectionByUser(uuid))
+    return res.json(await Collection.serializeAll(await TokenController.getCollectionByUser(uuid)))
   }
-  return res.json(await TokenController.getCollections())
+  return res.json(await Collection.serializeAll(await TokenController.getCollections()))
 }
 
 const init = (app: Router, version: number = 0) => {
