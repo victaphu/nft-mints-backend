@@ -33,12 +33,12 @@ const s3 = new AWS.S3({
  * Note: It looks like, unlike AWS, DO Spaces ignores out contentType and encoding. Leaving it in case they
  * add support later, but it's not strictly required for our app to function.
  * @param name {string} The filename
- * @param userUUID {string} UUID of the user
+ * @param prefix {string} prefix for the key
  */
-export async function generatePresignedUploadURL(name: string, userUUID: string) {
+export async function generatePresignedUploadURL(name: string, prefix: string) {
   const safeName = sanitizeName(name)
   const ext = getExtension(safeName)
-  const key = generateKey(userUUID) + ext
+  const key = generateKey(prefix) + ext
   const contentType = getContentType(ext)
   const disposition = `inline; filename="${safeName}"`
 
