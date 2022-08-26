@@ -81,7 +81,6 @@ export default class Wallet {
   async mintIdToTokenId(address: string, mintId: BigNumber | string) {
     const contract = new ethers.Contract(address, abi, this.provider)
 
-    console.log('Finding sequence ID')
     const sequence = await contract.callStatic.mintIdToTokenId(BigNumber.from(mintId))
     return sequence
   }
@@ -106,12 +105,10 @@ export default class Wallet {
       token.addMintIdStamp()
       await conn.createToken(token)
 
-      console.log('Minting transaction')
       const contract = new ethers.Contract(token.contractAddress, abi, this.provider)
       const tx = await contract.connect(this.wallet).mint(owner.walletAddress, token.uniqueMintId)
       await tx.wait()
 
-      console.log('Finding sequence ID')
       const sequence = await contract.callStatic.mintIdToTokenId(BigNumber.from(token.uniqueMintId))
       token.sequence = sequence
       token.isClaimed = true // transferred to the owner if this succeeds

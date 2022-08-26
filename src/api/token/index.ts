@@ -116,7 +116,6 @@ const getMetadata = async (req: Request, res: Response) => {
 }
 
 const init = (app: Router) => {
-  console.log('Initialise')
   app.post('/create', express.raw({type: 'application/json'}), createToken)
   app.get(
     '/token/:tokenUuid',
