@@ -10,9 +10,9 @@ export default class Collection {
   public link = ''
   public rate: number
   public maxMint: number
-  public uuid: string | undefined
+  public uuid = ''
   public collectionAddress: string = '' // if this is defined collection has launched, else collection in 'draft'
-  public ownerUUID: string
+  public ownerUUID = ''
   public productId: string | undefined // stripe product id; only valid if the token rate > 0
   public priceId: string | undefined // strip price id; only valid if the token rate > 0
   public collectionImage: string | undefined
