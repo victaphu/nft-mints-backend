@@ -45,7 +45,7 @@ const createCollection = async (req: Request, res: Response) => {
       ).serialize()
     )
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   }
 }

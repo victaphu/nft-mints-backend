@@ -11,7 +11,6 @@ const getUploadURL = async (req: Request, res: Response) => {
 }
 
 const init = (app: Router) => {
-  console.log('init file')
   app.get('/new/:name', getUploadURL)
 }
 

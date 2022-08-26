@@ -38,13 +38,11 @@ export default class LoginController {
     if (error || cancelled) return false
     // 1. Verify this is a message we sent
     const originalMessage = await this.lookup(messageHash)
-    console.log('original message', originalMessage)
     if (!originalMessage) return false
 
     // 2. Only the address returned based on signature should matter,
     // but we'll check against address provided as sanity check
     const sigAddress = ethers.utils.verifyMessage(originalMessage, signature)
-    console.log('sigAddress', sigAddress)
     if (sigAddress !== address) return false
 
     return true
@@ -58,7 +56,6 @@ export default class LoginController {
       if (!Object.prototype.hasOwnProperty.call(obj, k)) continue
       params.set(k, obj[k])
     }
-    console.log(params.toString())
     return params.toString()
   }
 

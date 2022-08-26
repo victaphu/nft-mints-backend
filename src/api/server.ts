@@ -48,7 +48,7 @@ export const RESTServer = async () => {
         if (origin === undefined || whitelist.indexOf(origin!) !== -1) {
           callback(null, true)
         } else {
-          console.log('failed', origin)
+          console.error('failed', origin)
           callback(new Error('Not allowed by CORS ' + origin))
         }
       },

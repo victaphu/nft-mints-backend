@@ -14,7 +14,6 @@ const l = logger(module)
 const checkout = async (request: Request, response: Response) => {
   // note: checkout should also include the requested smsCode
   const {tokenId, tokenAddress, mobileNumber, successUrl, cancelUrl} = request.body
-  console.log(request.body)
   const errors = validationResult(request)
 
   if (!errors.isEmpty()) {
@@ -33,8 +32,8 @@ const checkout = async (request: Request, response: Response) => {
     })
     response.redirect(303, session.url!)
   } catch (err) {
-    console.log(err)
-    response.status(400).send(errorToObject(err))
+    console.error(err)
+    response.status(500).send(errorToObject(err))
     return
   }
 }
@@ -73,7 +72,7 @@ const checkoutv2 = async (request: Request, response: Response) => {
     })
     response.status(200).json({url: session.url!})
   } catch (err) {
-    console.log(err)
+    console.error(err)
     response.status(400).send(errorToObject(err))
     return
   } finally {
@@ -85,7 +84,7 @@ const paymentHook = async (request: Request, response: Response) => {
   try {
     await PaymentController.handleStripeHook(request)
   } catch (err) {
-    console.log(err)
+    console.error(err)
     response.status(400).send(errorToObject(err))
     return
   }

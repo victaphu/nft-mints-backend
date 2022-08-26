@@ -62,7 +62,7 @@ const updateUser = async (req: Request, res: Response) => {
 
     return res.json(await user.serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -77,7 +77,7 @@ const getUser = async (req: Request, res: Response) => {
     req.session.userUuid = uuid // connect user
     return res.json(await (await conn.getUserByUUID(uuid)).serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -96,7 +96,7 @@ const getUserBySession = async (req: Request, res: Response) => {
   try {
     return res.json(await (await conn.getUserByUUID(uuid)).serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -112,7 +112,7 @@ const getUserByPhone = async (req: Request, res: Response) => {
     req.session.userUuid = user?.uuid // connect user
     return res.json(await user?.serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -130,7 +130,7 @@ const getUuidByVanityUrl = async (req: Request, res: Response) => {
     }
     return res.json({uuid: user.uuid})
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()

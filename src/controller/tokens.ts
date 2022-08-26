@@ -32,15 +32,12 @@ export async function fetchTokenByOwnerUuid(ownerUuid: string) {
     })
   )
 
-  console.log(results)
-
   await con.close()
 
   return results
 }
 
 export async function fetchTokens() {
-  console.log(dataObj)
   return dataObj
 }
 
@@ -68,12 +65,6 @@ export async function createCollection({
   const con = await db.connect()
 
   try {
-    // if (+rate < 5) {
-    //   throw new Error('Rate must be greater than $5')
-    // }
-    console.log(arguments)
-
-    // get user
     const user = await con.getUserByUUID(ownerUUID)
 
     if (user === null || !user.walletAddress) {
@@ -137,7 +128,7 @@ export async function createCollection({
         c.priceId = product.default_price?.id
       } else {
         // otherwise maybe we should flag this as stripe not ready?
-        console.log('stripe is not connected for this user')
+        console.warn('stripe is not connected for this user')
       }
     } // no productId means product is free
 
@@ -149,7 +140,6 @@ export async function createCollection({
 }
 
 export async function getCollectionByUUID(uuid: string) {
-  console.log('Get collection', uuid)
   const db = new DbHelper()
 
   const con = await db.connect()
@@ -171,7 +161,6 @@ export async function getCollectionById(id: string) {
 }
 
 export async function getUserDetailsWithCollections(userUuid: string) {
-  console.log('Get collection and user details', userUuid)
   const db = new DbHelper()
 
   const con = await db.connect()
@@ -188,7 +177,6 @@ export async function getUserDetailsWithCollections(userUuid: string) {
 }
 
 export async function getCollectionByUser(userUuid: string) {
-  console.log('Get collection', userUuid)
   const db = new DbHelper()
 
   const con = await db.connect()
@@ -200,7 +188,6 @@ export async function getCollectionByUser(userUuid: string) {
 }
 
 export async function getCollectionByUserAndType(userUuid: string, tokenType: TokenType) {
-  console.log('Get collection', userUuid, tokenType)
   const db = new DbHelper()
 
   const con = await db.connect()

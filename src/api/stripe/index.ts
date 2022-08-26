@@ -12,7 +12,7 @@ const getOAUTHLink = async (request: Request, response: Response) => {
     const url = await StripeController.getOAUTHLink(request)
     response.status(200).json({url})
   } catch (err) {
-    console.log(err)
+    console.error(err)
     response.status(400).send(errorToObject(err))
     return
   }
@@ -24,7 +24,7 @@ const authorizeOAUTH = async (request: Request, response: Response) => {
     // response.status(200).json({url})
     response.redirect(url!)
   } catch (err) {
-    console.log(err)
+    console.error(err)
     // response.status(400).send(errorToObject(err))
     response.redirect(redirectFailedAuth!.replace(':userUuid', request.session.userUuid!))
     return

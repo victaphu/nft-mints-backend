@@ -27,7 +27,6 @@ export default class User {
   verify(code: string) {
     // TODO hash code and compare to pendingCode
     const hash = crypto.createHash('sha256').update(code).digest('hex')
-    console.log(hash, code, this.pendingCode, this.codeHash)
     return this.pendingCode === code && this.codeHash === hash
   }
 
