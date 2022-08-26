@@ -76,6 +76,8 @@ export async function generatePresignedGetURL(key: string) {
 }
 
 export async function staticOrLookupFile(s3KeyOrStaticURL: string) {
+  if (!s3KeyOrStaticURL) s3KeyOrStaticURL = ''
+
   const s = s3KeyOrStaticURL.toLowerCase()
   if (s.startsWith('http://') || s.startsWith('https://')) {
     return s3KeyOrStaticURL
