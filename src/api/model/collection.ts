@@ -18,6 +18,7 @@ export default class Collection {
   public collectionImage: string | undefined
   public collectionImages: string[] | undefined
   public tokenType: TokenType = TokenType.COLLECTION // token type, airdrop / collection / access pass
+  public lockedContent: string[] = []
 
   // properties for v1
   public properties: object = {}
@@ -51,12 +52,17 @@ export default class Collection {
     const ps = images.map((key) => (key ? staticOrLookupFile(key) : null))
     const collectionImages = await Promise.all(ps)
 
+    const lockedContent = await Promise.all(
+      this.lockedContent.map((key) => staticOrLookupFile(key))
+    )
+
     const {collectionImage, ...props} = this
     const featuredImage = collectionImages?.length > 0 ? collectionImages[0] : null
     return {
       ...props,
       collectionImages,
       collectionImage: featuredImage,
+      lockedContent,
     }
   }
 
