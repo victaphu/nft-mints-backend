@@ -84,6 +84,34 @@ export async function staticOrLookupFile(s3KeyOrStaticURL: string) {
   }
 }
 
+export async function copy(existingPath: string, targetPath: string) {
+  return s3
+    .copyObject({
+      Bucket: config.bucket!,
+      CopySource: `${config.bucket!}/${existingPath}`,
+      Key: targetPath,
+    })
+    .promise()
+}
+
+export async function remove(key: string, ignoreFailure = false) {
+  try {
+    const result = await s3
+      .deleteObject({
+        Bucket: config.bucket!,
+        Key: key,
+      })
+      .promise()
+  } catch (e) {
+    if (!ignoreFailure) throw e
+  }
+}
+
+export async function move(existingPath: string, targetPath: string) {
+  await copy(existingPath, targetPath)
+  return remove(existingPath)
+}
+
 function sanitizeName(s: string) {
   return s.replace(/[^\w.-]+/, '')
 }
@@ -94,8 +122,15 @@ function getExtension(s: string) {
   return ''
 }
 
-function generateKey(userUUID: string) {
-  return `${userUUID}/${randomUUID()}`
+/**
+ * @param {string} prefix Prefix (usually a folder structure) to prepend to key
+ * @param {string} existingKey If provided, the extension from the existing key will be appended
+ * @return {string} newly generated key
+ */
+export function generateKey(prefix: string, existingKey = '') {
+  let ext = ''
+  if (existingKey) ext = getExtension(existingKey)
+  return `${prefix}/${randomUUID()}${ext}`
 }
 
 function getContentType(name: string) {

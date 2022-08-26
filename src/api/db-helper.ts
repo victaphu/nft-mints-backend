@@ -4,6 +4,7 @@ import Token from './model/token'
 import Collection from 'src/api/model/collection'
 import {UserType} from 'src/types/users'
 import StripeUser from './model/stripe'
+import {remove, move, generateKey} from 'src/controller/file'
 import {config} from 'src/config'
 
 export default class DbHelper {
@@ -58,6 +59,18 @@ export default class DbHelper {
     if (existingUser) {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'user already exists')
     }
+    if (user.profileImageBg.startsWith('staging')) {
+      user.profileImageBg = await DbHelper.moveFileToPermanentStorage(
+        user.profileImageBg,
+        user.uuid
+      )
+    }
+    if (user.profileImage.startsWith('staging')) {
+      user.profileImage = await DbHelper.moveFileToPermanentStorage(
+        user.profileImage,
+        user.uuid,
+      )
+    }
     const objToAdd = {...user, dateCreated: new Date().toISOString()}
     return this.db?.collection(collection).insertOne(objToAdd)
   }
@@ -67,6 +80,25 @@ export default class DbHelper {
     const existingUser = await this.getUserByPhone(user.phone)
     if (!existingUser) {
       throw new DbError(DbError.Type.UNINITIALIZED, 'user does not exist')
+    }
+    if (existingUser.profileImage !== user.profileImage) {
+      if (existingUser.profileImage) {
+        await remove(existingUser.profileImage, true)
+      }
+      if (user.profileImage) {
+        user.profileImage = await DbHelper.moveFileToPermanentStorage(user.profileImage, user.uuid)
+      }
+    }
+    if (existingUser.profileImageBg !== user.profileImageBg) {
+      if (existingUser.profileImageBg) {
+        await remove(existingUser.profileImageBg, true)
+      }
+      if (user.profileImageBg) {
+        user.profileImageBg = await DbHelper.moveFileToPermanentStorage(
+          user.profileImageBg,
+          user.uuid
+        )
+      }
     }
     return this.db
       ?.collection(collection)
@@ -105,8 +137,6 @@ export default class DbHelper {
     const collection = 'users'
     const result = await this.db?.collection(collection).findOne({publicLink: tag})
     if (!result) {
-      // throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
-      console.log(`user with tag ${tag} not found`)
       return null
     }
 
@@ -161,7 +191,6 @@ export default class DbHelper {
     if (!result) {
       return []
     }
-    console.log(result)
     return (await result.toArray()).map((r) => Token.fromDatabase(r))
   }
 
@@ -273,6 +302,12 @@ export default class DbHelper {
     const result = await this.db?.collection(mongoCollection).findOne({uuid: uuid})
     if (!result) return null
     return Collection.fromDatabase(result)
+  }
+
+  static async moveFileToPermanentStorage(existingKey: string, prefix: string) {
+    const targetKey = generateKey(`u/${prefix}`, existingKey)
+    await move(existingKey, targetKey)
+    return targetKey
   }
 }
 
