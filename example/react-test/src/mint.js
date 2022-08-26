@@ -39,7 +39,6 @@ function Mint() {
       }),
     })
 
-    console.log(result)
 
     setSubmitting((e) => {
       return false

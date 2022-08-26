@@ -25,8 +25,6 @@ export async function checkout({
   // lookup token address + token id to find the product id in the database
   const productId = 'price_1LHqjcKXnj3LtQdKjTlqHBYx'
 
-  console.log('checkout received', tokenId, tokenAddress, mobileNumber, successUrl, cancelUrl)
-
   const session = await stripe.checkout.sessions.create({
     line_items: [
       {
@@ -90,8 +88,6 @@ export async function checkoutv2({
 
   // todo: multi mint from multiple users?? do not allow!
 
-  console.log(lineItems, freeMints)
-
   if (freeMints.length > 0) {
     // mint free tokens for the user!
     // todo: allow more than one minting
@@ -134,30 +130,20 @@ export async function handleStripeHook(request: Request) {
 
   const event = stripe.webhooks.constructEvent(request.body, sig!, endpointSecret!)
   // Handle the event
-  // console.log(event.type, event.data.object)
   const paymentIntent: any = event.data.object
   const nfts = (paymentIntent.metadata.nfts && JSON.parse(paymentIntent.metadata.nfts)) || []
   switch (event.type) {
     case 'payment_intent.succeeded':
-      console.log('Received payment intent success', paymentIntent, paymentIntent.metadata)
       break
     // ... handle other event types
     case 'checkout.session.completed':
-      console.log(
-        'Received session completed, we can mint now',
-        paymentIntent,
-        paymentIntent.metadata
-      )
       // on success call the chain-mint api
-      console.log(
-        axios.get(
-          `${config.api.serverendpoint}/v0/minter/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
-        )
+      // TODO: Don't call a self-endpoint for this
+      axios.get(
+        `${config.api.serverendpoint}/v0/minter/chain-mint/${paymentIntent.metadata.userId}/${nfts[0].collectionUuid}`
       )
-      // doMint(paymentIntent.metadata.userId, nfts[0].collectionUuid)
-
       break
     default:
-      console.log(`Unhandled event type ${event.type}`)
+      console.warn(`Unhandled event type ${event.type}`)
   }
 }

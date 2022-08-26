@@ -41,11 +41,8 @@ export const getOAUTHLink = async (req: Request) => {
 export const authorizeOAUTH = async (req: Request) => {
   const {code, state} = req.query
 
-  console.log('received response', code, state, req.session.userUuid)
-
   // Assert the state matches the state you provided in the OAuth link (optional).
   if (req.session.state !== state) {
-    console.log(req.session.state, 'not same as', state)
     throw new Error('Incorrect state parameter: ' + state)
   }
 
@@ -116,7 +113,6 @@ const saveAccountId = async ({
 }) => {
   // Save the connected account ID from the response to your database.
   // https://stripe.com/docs/connect/oauth-reference
-  console.log('Connected account ID: ' + stripeUserId, userUuid)
 
   const stripeUser = new StripeUser(
     userUuid,
@@ -187,7 +183,6 @@ export async function registerProduct(
   // fails if the user has not registered their stripe account yet!
   const stripeRemote = await getStripeObjectByUserUuid(ownerUuid)
 
-  console.log('Creating product:', arguments)
   const payload: any = {
     name: name,
     description: description,
@@ -204,6 +199,5 @@ export async function registerProduct(
     payload.images = [image]
   }
   const product = await stripeRemote.products.create(payload)
-  console.log('product created: ', product)
   return product
 }

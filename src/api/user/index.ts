@@ -19,7 +19,7 @@ const createUser = async (req: Request, res: Response) => {
   try {
     await conn.createUser(user)
     req.session.userUuid = user.uuid // set user uuid here for now?
-    return res.json(user)
+    return res.json(await user.serialize())
   } finally {
     conn.close()
   }
@@ -60,9 +60,9 @@ const updateUser = async (req: Request, res: Response) => {
     }
     await conn.updateUser(user)
 
-    return res.json(user)
+    return res.json(await user.serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -75,9 +75,9 @@ const getUser = async (req: Request, res: Response) => {
   const conn = await new DbHelper().connect()
   try {
     req.session.userUuid = uuid // connect user
-    return res.json(await conn.getUserByUUID(uuid))
+    return res.json(await (await conn.getUserByUUID(uuid)).serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -94,9 +94,9 @@ const getUserBySession = async (req: Request, res: Response) => {
 
   const conn = await new DbHelper().connect()
   try {
-    return res.json(await conn.getUserByUUID(uuid))
+    return res.json(await (await conn.getUserByUUID(uuid)).serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -110,9 +110,9 @@ const getUserByPhone = async (req: Request, res: Response) => {
   try {
     const user = await conn.getUserByPhone(phone)
     req.session.userUuid = user?.uuid // connect user
-    return res.json(user)
+    return res.json(await user?.serialize())
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()
@@ -130,7 +130,7 @@ const getUuidByVanityUrl = async (req: Request, res: Response) => {
     }
     return res.json({uuid: user.uuid})
   } catch (err) {
-    console.log(err)
+    console.error(err)
     res.status(400).send(errorToObject(err))
   } finally {
     conn.close()

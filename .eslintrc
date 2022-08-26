@@ -41,6 +41,7 @@
     "no-constant-condition": "off",
     "prefer-rest-params": "off",
     "no-unreachable": "off",
-    "no-trailing-spaces": "off"
+    "no-trailing-spaces": "off",
+    "no-console": ["warn", {"allow": ["info", "warn", "error"]}]
   }
 }

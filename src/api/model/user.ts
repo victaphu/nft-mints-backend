@@ -1,5 +1,6 @@
 import crypto, {randomUUID} from 'crypto'
 import {UserType} from 'src/types/users'
+import {FileController} from 'src/controller'
 
 export default class User {
   public id: string | undefined
@@ -26,8 +27,15 @@ export default class User {
   verify(code: string) {
     // TODO hash code and compare to pendingCode
     const hash = crypto.createHash('sha256').update(code).digest('hex')
-    console.log(hash, code, this.pendingCode, this.codeHash)
     return this.pendingCode === code && this.codeHash === hash
+  }
+
+  async serialize() {
+    return {
+      ...this,
+      profileImage: await FileController.staticOrLookupFile(this.profileImage),
+      profileImageBg: await FileController.staticOrLookupFile(this.profileImageBg),
+    }
   }
 
   static generateUUID(): string {
