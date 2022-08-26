@@ -8,6 +8,7 @@ import {CollectionCreate, TokenType} from 'src/types/tokens'
 import {UserType} from 'src/types/users'
 import {StripeController} from '.'
 import {config} from '../config'
+import {defaultSerializerOptions, SerializerOptions} from "src/types/serializer-options";
 
 export async function fetchTokenByAddress(tokenAddress: string) {
   return dataObj.collections.find((nft) => nft.nftAddress === tokenAddress)
@@ -55,6 +56,7 @@ export async function createCollection({
   creatorRoyalty,
   additionalDetails,
   properties,
+  lockedContent,
 }: CollectionCreate) {
   let price = rate
   if (+rate < 1 || !rate) {
@@ -95,6 +97,9 @@ export async function createCollection({
     c.creatorRoyalties = creatorRoyalty
     c.additionalDetails = additionalDetails
     c.properties = properties
+    if (lockedContent) {
+      c.lockedContent = lockedContent
+    }
 
     const wallet = new Wallet()
     const collectionAddress = await wallet.deployCollection(
@@ -160,7 +165,10 @@ export async function getCollectionById(id: string) {
   }
 }
 
-export async function getUserDetailsWithCollections(userUuid: string) {
+export async function getUserDetailsWithCollections(
+  userUuid: string,
+  serializerArgs: SerializerOptions = defaultSerializerOptions
+) {
   const db = new DbHelper()
 
   const con = await db.connect()
@@ -169,7 +177,7 @@ export async function getUserDetailsWithCollections(userUuid: string) {
     const collections = await con.getCollectionsByFilter({ownerUUID: userUuid})
     return {
       user,
-      collections: await Collection.serializeAll(collections),
+      collections: await Collection.serializeAll(collections, serializerArgs),
     }
   } finally {
     await con.close()
