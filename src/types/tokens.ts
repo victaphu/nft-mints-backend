@@ -18,4 +18,5 @@ export interface CollectionCreate {
   creatorRoyalty: number | 0
   additionalDetails: string | ''
   properties: object | {}
+  lockedContent: string[]
 }
