@@ -1,9 +1,10 @@
-import {MongoClient, ServerApiVersion, Db} from 'mongodb'
+import {Db, MongoClient, ServerApiVersion} from 'mongodb'
 import User from './model/user'
 import Token from './model/token'
 import Collection from 'src/api/model/collection'
 import {UserType} from 'src/types/users'
 import StripeUser from './model/stripe'
+import {generateKey, move, remove} from 'src/controller/file'
 import {config} from 'src/config'
 
 export default class DbHelper {
@@ -58,6 +59,18 @@ export default class DbHelper {
     if (existingUser) {
       throw new DbError(DbError.Type.ALREADY_EXISTS, 'user already exists')
     }
+    if (user.profileImageBg.startsWith('staging')) {
+      user.profileImageBg = await DbHelper.moveUserFileToPermanentStorage(
+        user.profileImageBg,
+        user.uuid
+      )
+    }
+    if (user.profileImage.startsWith('staging')) {
+      user.profileImage = await DbHelper.moveUserFileToPermanentStorage(
+        user.profileImage,
+        user.uuid
+      )
+    }
     const objToAdd = {...user, dateCreated: new Date().toISOString()}
     return this.db?.collection(collection).insertOne(objToAdd)
   }
@@ -67,6 +80,28 @@ export default class DbHelper {
     const existingUser = await this.getUserByPhone(user.phone)
     if (!existingUser) {
       throw new DbError(DbError.Type.UNINITIALIZED, 'user does not exist')
+    }
+    if (existingUser.profileImage !== user.profileImage) {
+      if (existingUser.profileImage) {
+        await remove(existingUser.profileImage, true)
+      }
+      if (user.profileImage) {
+        user.profileImage = await DbHelper.moveUserFileToPermanentStorage(
+          user.profileImage,
+          user.uuid
+        )
+      }
+    }
+    if (existingUser.profileImageBg !== user.profileImageBg) {
+      if (existingUser.profileImageBg) {
+        await remove(existingUser.profileImageBg, true)
+      }
+      if (user.profileImageBg) {
+        user.profileImageBg = await DbHelper.moveUserFileToPermanentStorage(
+          user.profileImageBg,
+          user.uuid
+        )
+      }
     }
     return this.db
       ?.collection(collection)
@@ -105,13 +140,10 @@ export default class DbHelper {
     const collection = 'users'
     const result = await this.db?.collection(collection).findOne({publicLink: tag})
     if (!result) {
-      // throw new DbError(DbError.Type.UNINITIALIZED, `Specified user UUID ${uuid} does not exist`)
-      console.log(`user with tag ${tag} not found`)
       return null
     }
 
-    const user = User.fromDatabase(result)
-    return user
+    return User.fromDatabase(result)
   }
 
   async createStripeUser(stripeUser: StripeUser) {
@@ -129,8 +161,7 @@ export default class DbHelper {
 
   async disconnectStripeUser(userUuid: string) {
     const collection = 'stripeuser'
-    const result = await this.db?.collection(collection).deleteOne({userUuid})
-    return result
+    return await this.db?.collection(collection).deleteOne({userUuid})
   }
 
   async getStripeUser(userUuid: string) {
@@ -161,7 +192,6 @@ export default class DbHelper {
     if (!result) {
       return []
     }
-    console.log(result)
     return (await result.toArray()).map((r) => Token.fromDatabase(r))
   }
 
@@ -243,6 +273,14 @@ export default class DbHelper {
     if (!collection.uuid) {
       collection.addUUIDStamp()
     }
+    const permanentLocations =
+      collection.collectionImages?.map((elm) => {
+        if (elm.startsWith('staging')) {
+          return DbHelper.moveCollectionFileToPermanentStorage(elm, collection.uuid)
+        }
+        return elm
+      }) || []
+    collection.collectionImages = await Promise.all(permanentLocations)
     const objToAdd = {...collection, dateCreated: new Date().toISOString()}
     return this.db?.collection(mongoCollection).insertOne(objToAdd)
   }
@@ -280,6 +318,18 @@ export default class DbHelper {
     const result = await this.db?.collection(mongoCollection).findOne({uuid: uuid})
     if (!result) return null
     return Collection.fromDatabase(result)
+  }
+
+  static async moveUserFileToPermanentStorage(existingKey: string, prefix: string) {
+    return DbHelper.moveFileToPermanentStorage(existingKey, `u/${prefix}`)
+  }
+  static async moveCollectionFileToPermanentStorage(existingKey: string, prefix: string) {
+    return DbHelper.moveFileToPermanentStorage(existingKey, `c/${prefix}`)
+  }
+  static async moveFileToPermanentStorage(existingKey: string, prefix: string) {
+    const targetKey = generateKey(prefix, existingKey)
+    await move(existingKey, targetKey)
+    return targetKey
   }
 }
 

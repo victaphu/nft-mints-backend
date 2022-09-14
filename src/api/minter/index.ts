@@ -15,7 +15,6 @@ const l = logger(module)
 const doMint = async (req: Request, res: Response) => {
   let conn
   try {
-    console.log('Doing minting now')
     // Refactor: "owner" will likely come from session after authentication is in place
     conn = await new DbHelper().connect()
     const owner = await conn.getUserByUUID(req.params.owner)
@@ -105,7 +104,6 @@ const init = (app: Router, version: number = 0) => {
   app.get('/mint-id/:contract/:id', getSequenceIdFromMintID)
 
   app.get('/', (req, res) => {
-    console.log('GET')
     res.json({message: 'Success'})
   })
 }

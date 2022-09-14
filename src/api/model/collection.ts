@@ -1,5 +1,8 @@
 import {randomUUID} from 'crypto'
+import _ from 'lodash'
 import {TokenType} from 'src/types/tokens'
+import {staticOrLookupFile} from 'src/controller/file'
+import {defaultSerializerOptions, SerializerOptions} from "src/types/serializer-options";
 
 export default class Collection {
   public id: string | undefined
@@ -8,14 +11,15 @@ export default class Collection {
   public link = ''
   public rate: number
   public maxMint: number
-  public uuid: string | undefined
+  public uuid = ''
   public collectionAddress: string = '' // if this is defined collection has launched, else collection in 'draft'
-  public ownerUUID: string
+  public ownerUUID = ''
   public productId: string | undefined // stripe product id; only valid if the token rate > 0
   public priceId: string | undefined // strip price id; only valid if the token rate > 0
   public collectionImage: string | undefined
   public collectionImages: string[] | undefined
   public tokenType: TokenType = TokenType.COLLECTION // token type, airdrop / collection / access pass
+  public lockedContent: string[] = []
 
   // properties for v1
   public properties: object = {}
@@ -42,6 +46,46 @@ export default class Collection {
   addUUIDStamp(): string {
     this.uuid = Collection.generateUUID()
     return this.uuid
+  }
+
+  async serialize(
+    opts: SerializerOptions = defaultSerializerOptions
+  ): Promise<SerializedCollection> {
+    const images = this.collectionImages?.length ? this.collectionImages : [this.collectionImage]
+    const ps = images.map((key) => (key ? staticOrLookupFile(key) : null))
+    const collectionImages = await Promise.all(ps)
+
+    console.log('lockedContent', this.lockedContent)
+    const lockedContent = await Promise.all(
+      this.lockedContent.map((key) => staticOrLookupFile(key))
+    )
+
+    const {collectionImage, lockedContent: lc, ...props} = this
+    const featuredImage = collectionImages?.length > 0 ? collectionImages[0] : null
+    const hideLockedContent: string[] = []
+    const ans = {
+      ...props,
+      collectionImages,
+      collectionImage: featuredImage,
+      lockedContent: hideLockedContent,
+    }
+    // TODO: Need to check owner of TOKEN not owner of COLLECTION
+    const {request} = opts
+    console.log('uuid check for owner serialization', request?.session, this.ownerUUID)
+    if (request?.session.userUuid === this.ownerUUID) {
+      ans.lockedContent = lockedContent
+    }
+
+    return ans
+  }
+
+  static async serializeAll(collections: Array<Collection> | null, ...args: any) {
+    const ps = collections?.map((c) => c.serialize(args))
+    let serializedCollections: Array<SerializedCollection> = []
+    if (ps?.length) {
+      serializedCollections = _.compact(await Promise.all(ps))
+    }
+    return serializedCollections
   }
 
   static generateUUID(): string {
@@ -73,6 +117,33 @@ export default class Collection {
     t.additionalDetails = result.additionalDetails
     t.creatorRoyalties = result.creatorRoyalties
     t.collectionAddress = result.collectionAddress
+    t.lockedContent = result.lockedContent || []
     return t
+  }
+}
+
+class SerializedCollection {
+  public id: string | undefined
+  public title = ''
+  public description = ''
+  public link = ''
+  public rate: number | undefined
+  public maxMint: number | undefined
+  public uuid: string | undefined
+  public collectionAddress: string = '' // if this is defined collection has launched, else collection in 'draft'
+  public ownerUUID: string | undefined
+  public productId: string | undefined // stripe product id; only valid if the token rate > 0
+  public priceId: string | undefined // strip price id; only valid if the token rate > 0
+  public collectionImages: string[] = []
+  public tokenType: TokenType = TokenType.COLLECTION // token type, airdrop / collection / access pass
+
+  // properties for v1
+  public properties: object = {}
+  public perks: string = ''
+  public additionalDetails: string = ''
+  public creatorRoyalties: number = 0
+
+  get collectionImage() {
+    return this.collectionImages?.length > 0 ? this.collectionImages[0] : null
   }
 }
